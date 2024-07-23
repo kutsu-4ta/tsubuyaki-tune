@@ -17,6 +17,11 @@ lint = true
 capabilities = "CAPABILITY_IAM"
 confirm_changeset = true
 resolve_s3 = true
+s3_prefix = "tsubuyaki-tune"
+region = "ap-northeast-1"
+disable_rollback = true
+parameter_overrides = "region=\"ap-northeast-1\" googleRedirectUrl=\"http://localhost:3000/signin\" googleClientSecret=\"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\" authTableName=\"TsubuyakiUserTable\""
+image_repositories = []
 
 [default.package.parameters]
 resolve_s3 = true

@@ -1,5 +1,14 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
+Parameters:
+  region:
+    Type: String
+  googleRedirectUrl:
+    Type: String
+  googleClientSecret:
+    Type: String
+  authTableName:
+    Type: String
 Description: >
   tsubuyaki-tune
 
@@ -11,39 +20,119 @@ Globals:
     Timeout: 3
 
 Resources:
-  HelloWorldFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+  # ========================================================================================================
+  # DynamoDB
+  # ========================================================================================================
+  UniteTuneDynamo:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref authTableName
+      KeySchema:
+        - AttributeName: userId
+          KeyType: HASH
+      AttributeDefinitions:
+        - AttributeName: userId
+          AttributeType: S
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
+  # ========================================================================================================
+  # APIGateway
+  # ========================================================================================================
+  UniteTuneApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Dev
+      EndpointConfiguration:
+        Type: REGIONAL # リージョン最適化に設定
+      Auth:
+        DefaultAuthorizer: TokenAuthorizer # デフォルトの認可をトークンオーソライザーに設定
+        AddApiKeyRequiredToCorsPreflight: false
+        Authorizers:
+          TokenAuthorizer:
+            FunctionArn: !GetAtt TokenAuthorizerFunction.Arn # SAMとapp.tsで作ったラムダ関数
+        AddDefaultAuthorizerToCorsPreflight: false # Preflight requestの認可を除外するための設定
+      Cors:
+        AllowMethods: "'GET,OPTIONS,POST'"
+        AllowHeaders: "'*'"
+        AllowOrigin: "'*'"
+    Metadata:
+      SamResourceId: UniteTuneApiGateway
+  # ========================================================================================================
+  # オーソライズ関数
+  # ========================================================================================================
+  TokenAuthorizerFunction:
+    Type: AWS::Serverless::Function
     Properties:
       CodeUri: hello-world/
-      Handler: app.lambdaHandler
+      Handler: app.tokenAuthorizerFunction
+      Runtime: nodejs18.x
+    Metadata:
+      SamResourceId: TokenAuthorizerFunction
+      BuildMethod: esbuild
+      BuildProperties:
+        Format: esm
+        Minify: false
+        OutExtension: # 拡張子を.mjにすることでAWSのコンソールで表示できる
+          - .js=.mjs
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints:
+          - app.ts
+        External:
+          - "@aws-sdk/client-dynamodb"
+          - "@aws-sdk/lib-dynamodb"
+  # ========================================================================================================
+  # GoogleSingIn関数
+  # ========================================================================================================
+  GoogleSingInFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: hello-world
+      Handler: app.googleSignInFunction
       Runtime: nodejs18.x
       Architectures:
         - x86_64
       Events:
-        HelloWorld:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+        GoogleSignIn:
+          Type: Api
           Properties:
-            Path: /hello
-            Method: get
-    Metadata: # Manage esbuild properties
+            Path: /oauth/google/signin
+            Method: post
+            RestApiId:
+              Ref: UniteTuneApiGateway
+      # Lambdaの環境変数
+      Environment:
+        Variables:
+          RedirectUri: !Ref googleRedirectUrl
+          ClientSecret: !Ref googleClientSecret
+          AuthTableName: !Ref authTableName
+          Region: !Ref region
+      Policies:
+        - AmazonDynamoDBFullAccess
+    Metadata:
       BuildMethod: esbuild
       BuildProperties:
-        Minify: true
+        Format: esm
+        Minify: false
+        OutExtension: # 拡張子を.mjにすることでAWSのコンソールで表示できる
+          - .js=.mjs
         Target: "es2020"
+        UseNpmCi: true
         Sourcemap: true
-        EntryPoints: 
-        - app.ts
-
+        EntryPoints:
+          - app.ts
+        External: # 外部パッケージの追加（ビルドの際に除外される）
+          - "https"
+          - "@aws-sdk/client-dynamodb"
+          - "@aws-sdk/lib-dynamodb"
+# ========================================================================================================
+# 作成したスタック内のリソースの情報を標準出力に表示する
+# ========================================================================================================
 Outputs:
-  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
-  # Find out more about other implicit resources you can reference within SAM
-  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  HelloWorldApi:
-    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  HelloWorldFunction:
-    Description: "Hello World Lambda Function ARN"
-    Value: !GetAtt HelloWorldFunction.Arn
-  HelloWorldFunctionIamRole:
-    Description: "Implicit IAM Role created for Hello World function"
-    Value: !GetAtt HelloWorldFunctionRole.Arn
+  # GoogleSignInAPI
+  GoogleSingInFunction:
+    Description: "Google OAuth Lambda Function ARN"
+    Value: !Sub "https://${UniteTuneApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Dev/oauth/google/"

@@ -1,5 +1,4 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-
 /**
  *
  * Event doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
@@ -9,22 +8,28 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
  * @returns {Object} object - API Gateway Lambda Proxy Output Format
  *
  */
+import {lambdaHandler as TokenAuthorizer} from "./functions/TokenAuthorizerFunction/app";
+import {lambdaHandler as GoogleSignIn} from "./functions/GoogleSignInFunction/app";
 
-export const lambdaHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-    try {
-        return {
-            statusCode: 200,
-            body: JSON.stringify({
-                message: 'hello world',
-            }),
-        };
-    } catch (err) {
-        console.log(err);
-        return {
-            statusCode: 500,
-            body: JSON.stringify({
-                message: 'some error happened',
-            }),
-        };
-    }
-};
+export const tokenAuthorizerFunction = TokenAuthorizer;
+export const googleSignInFunction = GoogleSignIn;
+
+// export const app = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+//     try {
+//         return {
+//             statusCode: 200,
+//             body: JSON.stringify({
+//                 message: 'hello world',
+//             }),
+//         };
+//     } catch (err) {
+//         console.log(err);
+//         return {
+//             statusCode: 500,
+//             body: JSON.stringify({
+//                 message: 'some error happened',
+//             }),
+//         };
+//     }
+// };
+

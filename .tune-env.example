@@ -1,0 +1,11 @@
+#****************************************
+# SAMのtemplate.yamlで使う環境変数
+# update:2024/07/23
+# author: ChatGPT by Yamashita
+#
+# 使用にあたってはドキュメントを確認してください。
+#****************************************
+authTableName=''
+region='a'
+googleClientSecret=''
+googleRedirectUrl=''
