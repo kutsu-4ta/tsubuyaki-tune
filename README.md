@@ -107,9 +107,9 @@ You can find more information and examples about filtering Lambda function logs 
 Tests are defined in the `hello-world/tests` folder in this project. Use NPM to install the [Jest test framework](https://jestjs.io/) and run unit tests.
 
 ```bash
-tsubuyaki-tune$ cd hello-world
-hello-world$ npm install
-hello-world$ npm run test
+tsubuyaki-tune$ cd backend-lambda
+backend-lambda$ npm install
+backend-lambda$ npm run test
 ```
 
 ## Cleanup

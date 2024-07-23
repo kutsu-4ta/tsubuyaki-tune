@@ -66,7 +66,7 @@ Resources:
   TokenAuthorizerFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: hello-world/
+      CodeUri: backend-lambda/
       Handler: app.tokenAuthorizerFunction
       Runtime: nodejs18.x
     Metadata:
@@ -90,7 +90,7 @@ Resources:
   GoogleSingInFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: hello-world
+      CodeUri: backend-lambda
       Handler: app.googleSignInFunction
       Runtime: nodejs18.x
       Architectures:

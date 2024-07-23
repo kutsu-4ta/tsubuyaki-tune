@@ -78,14 +78,14 @@ const SignInView: () => JSX.Element = () => {
                 });
 
                 // ホーム画面へ遷移
-                // window.location.href = '/';
+                window.location.href = '/';
             });
         }).catch((er) => {
             console.log(er);
             void swal("error", "error", "error").then(error => {
                 // ログイン画面へ遷移
                 console.log(error);
-                // window.location.href = '/signin';
+                window.location.href = '/signin';
             });
             setGoogleOneTimeCode('');
         });
