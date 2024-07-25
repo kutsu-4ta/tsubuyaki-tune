@@ -7,6 +7,7 @@ import GoogleAuthenticationButton from "./authorization/google/GoogleAuthenticat
 import axios from "axios";
 import {profileState} from "../../atoms/ProfileState";
 import {SignInViewModel} from "./SignInViewModel";
+
 const languageLocale = 'ja';
 const explainJa = <span>Googleアカウントでサインインしてください.</span>
 const explainEn = <span>Please sign in with your Google account.</span>
@@ -41,7 +42,6 @@ const SignInView: () => JSX.Element = () => {
             return
         }
 
-        // const body = new URLSearchParams({code: googleOneTimeCode, client_id: clientId});
         const axiosInstance = axios.create({
             headers: {
                 'Authorization': 'allow',
@@ -50,45 +50,42 @@ const SignInView: () => JSX.Element = () => {
         });
         const endPoint = process.env.REACT_APP_SIGNIN_API as string;
         const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID as string;
-
         const body = {code, client_id: clientId};
 
-        console.log(body);
-
-        // await viewModel.signIn(googleOneTimeCode)
+        // void await viewModel.signIn(googleOneTimeCode) // MEMO: 非同期の返事が待たれない。。書き方の調査必要。
         void axiosInstance.post(endPoint, body)
             .then(response => {
-            console.log('googleLogin')
-            console.log(response)
-            void swal("Success", "response", "success").then(res => {
-                console.log('成功', res);
+                console.log('googleLogin')
+                console.log(response)
+                void swal("Success", "response", "success").then(res => {
+                    console.log('成功', res);
 
-                // ユーザーの認証情報のストアを更新
-                setAuthentication({
-                    uid: response.data.uid,
-                    accessToken: response.data.accessToken,
-                    email: response.data.email
+                    // ユーザーの認証情報のストアを更新
+                    setAuthentication({
+                        uid: response.data.data.uid,
+                        accessToken: response.data.data.accessToken,
+                        email: response.data.data.email
+                    });
+
+                    // ユーザー情報のストアを更新
+                    setProfile({
+                        // role: response.data.role,
+                        nickName: response.data.data?.nickName ?? 'aaaaaa',
+                        iconImage: response.data.data?.iconImage ?? 'bbbbbb',
+                    });
+
+                    // ホーム画面へ遷移
+                    window.location.href = '/';
                 });
-
-                // ユーザー情報のストアを更新
-                setProfile({
-                    role: response.data.role,
-                    nickName: response.data.nickName,
-                    iconImage: response.data.iconImage,
+            }).catch((er) => {
+                console.log(er);
+                void swal("error", "error", "error").then(error => {
+                    // ログイン画面へ遷移
+                    console.log(error);
+                    window.location.href = '/signin';
                 });
-
-                // ホーム画面へ遷移
-                window.location.href = '/';
+                setGoogleOneTimeCode('');
             });
-        }).catch((er) => {
-            console.log(er);
-            void swal("error", "error", "error").then(error => {
-                // ログイン画面へ遷移
-                console.log(error);
-                window.location.href = '/signin';
-            });
-            setGoogleOneTimeCode('');
-        });
     }
 
     // 開発環境においてStrictModeの2回目を無視するフラグ
@@ -97,7 +94,7 @@ const SignInView: () => JSX.Element = () => {
         viewModel.setUp({authentication: {uid: authState.uid, email: authState.email}});
 
         if (!strictModeIgnore) {
-            signIn()
+            signIn();
         }
 
         return () => {
@@ -106,9 +103,16 @@ const SignInView: () => JSX.Element = () => {
     }, []);
 
     return (
-        <Box className="container" sx={{color: "#d7d7d7", paddingLeft: 30, backgroundColor: "black", display: 'flex', height: "100vh", alignContent: "center"}}>
+        <Box className="container" sx={{
+            color: "#d7d7d7",
+            paddingLeft: 30,
+            backgroundColor: "black",
+            display: 'flex',
+            height: "100vh",
+            alignContent: "center"
+        }}>
             <section className="signup">
-                <Box sx={{textAlign: "center", paddingTop:30}}>
+                <Box sx={{textAlign: "center", paddingTop: 30}}>
                     <h2>TSUBUYAKIに{signUp}</h2>
                     <div>
                         <p>
@@ -116,7 +120,7 @@ const SignInView: () => JSX.Element = () => {
                         </p>
                     </div>
                 </Box>
-                <Box sx={{textAlign: "center", paddingTop:5}}>
+                <Box sx={{textAlign: "center", paddingTop: 5}}>
                     <GoogleAuthenticationButton/>
                 </Box>
             </section>
