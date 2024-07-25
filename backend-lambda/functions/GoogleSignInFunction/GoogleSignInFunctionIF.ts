@@ -7,16 +7,6 @@ export interface RequestInputIF {
 }
 
 /**
- * 【仕様】このlambdaHandlerで使用する環境変数
- */
-export interface EnvironmentsIF {
-    clientSecret: string
-    redirectUrl: string
-    region: string
-    authTableName: string
-}
-
-/**
  * 【仕様】access_token取得用のGoogleAPIが返してくれるレスポンス
  */
 export interface OAuthResponse {
