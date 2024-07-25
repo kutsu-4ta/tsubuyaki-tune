@@ -1,5 +1,5 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, ScanCommand, UpdateCommand, ScanCommandOutput} from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, ScanCommand, UpdateCommand} from "@aws-sdk/lib-dynamodb";
 import LambdaEvent from "../Utility/LambdaEventIF";
 import {PostRequest} from "../Utility/Http/PostRequest";
 import {GetRequest} from "../Utility/Http/GetRequest";
@@ -80,23 +80,23 @@ async function createUser(oAuthResponse: OAuthResponse, detailUserInfo: decodeJw
     // ユーザーチェック
     const client = new DynamoDBClient({region: ENVIRONMENT.region});
     const docClient = DynamoDBDocumentClient.from(client);
-    const scanParams = {
-        TableName: ENVIRONMENT.authTableName,
-    };
 
-    const scanCommand = new ScanCommand(scanParams);
-    const scanResult = await client.send(scanCommand);
-    const newUserId = getNewUserId(scanResult);
+    // 一意の値を生成
+    const newUserId = await getNewUserId(client);
+    // const uid = uuidv4() as string; // TODO: DBでユニークチェックが必要 Lambadaレイヤー作成後に使える
+    const uid = 'not_use_this_is_under_construction'+ `${newUserId}`; // TODO:仮
 
+    //　ユーザー作成
     const updateCommand = new UpdateCommand({
         TableName: ENVIRONMENT.authTableName,
         Key: {
             userId: `${newUserId}`
         },
-        UpdateExpression: "set accessToken = :accessToken, email = :email",
+        UpdateExpression: "set accessToken = :accessToken, email = :email, uid = :uid",
         ExpressionAttributeValues: {
             ":accessToken": oAuthResponse.access_token,
-            ":email": detailUserInfo.email
+            ":email": detailUserInfo.email,
+            ":uid": uid
         },
         ReturnValues: "ALL_NEW",
     });
@@ -105,11 +105,13 @@ async function createUser(oAuthResponse: OAuthResponse, detailUserInfo: decodeJw
     console.log(updateResult);
 
     const createdUserId = updateResult!.Attributes!.userId! as string;
+    const createdUid = updateResult!.Attributes!.uid as string;
     const email = updateResult!.Attributes!.email! as string;
     const createdAccessToken = updateResult!.Attributes!.accessToken! as string;
 
     return await User.createInstance({
         userId: createdUserId,
+        uid: createdUid,
         email: email,
         accessToken: createdAccessToken
     });
@@ -172,7 +174,13 @@ function  fetchAccessToken(requestInput: RequestInput): Promise<OAuthResponse> {
  * 新しいユーザーIDを発番する
  * @param scanResult
  */
-const getNewUserId = (scanResult: ScanCommandOutput): number => {
+const getNewUserId = async (client: DynamoDBClient): Promise<number> => {
+    const scanParams = {
+        TableName: ENVIRONMENT.authTableName,
+    };
+    const scanCommand = new ScanCommand(scanParams);
+    const scanResult = await client.send(scanCommand);
+
     let newUserId = 1;
     if (scanResult.Count === 0) {
         return newUserId;
@@ -216,15 +224,14 @@ const getUser = async (email: string ): Promise<User | null> => {
     //　ユーザーが存在している場合はサインイン
     for(let i = 0; i < scanResult.Items!.length; i++) {
         const user = scanResult.Items![i];
-        console.log("=========in_for========");
-        console.log(user);
-        console.log(user.email);
-        console.log(email);
-        console.log(user.email === email);
-
         if (user.email === email) {
             console.log("user find!");
-            return User.createInstance({userId: user.userId, email: user.email, accessToken: user.accessToken});
+            return User.createInstance({
+                userId: user.userId,
+                uid: user.uid,
+                email: user.email,
+                accessToken: user.accessToken
+            });
         }
     }
     return null;
@@ -233,13 +240,14 @@ const getUser = async (email: string ): Promise<User | null> => {
 class User {
     private constructor(
         public readonly userId: string,
+        public readonly uid: string,
         public readonly email: string,
         public readonly accessToken: string
     ) {
     }
 
-    static async createInstance(authInfo: { userId: string, email: string, accessToken: string }): Promise<User> {
-        return new User(authInfo.userId, authInfo.email, authInfo.accessToken);
+    static async createInstance(authInfo: { userId: string, uid: string, email: string, accessToken: string }): Promise<User> {
+        return new User(authInfo.userId, authInfo.uid, authInfo.email, authInfo.accessToken);
     }
 
     /**
