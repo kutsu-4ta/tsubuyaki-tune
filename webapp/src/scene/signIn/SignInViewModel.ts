@@ -30,7 +30,7 @@ export class SignInViewModel implements SignInViewModelIF {
      * サインインを実行する
      */
     async signIn(code:string): Promise<AxiosResponse> {
-        const endPoint = process.env.REACT_APP_LOGIN_API as string;
+        const endPoint = process.env.REACT_APP_SIGNIN_API as string;
         const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID as string;
 
         const params = {

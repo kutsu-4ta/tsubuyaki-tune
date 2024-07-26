@@ -42,22 +42,11 @@ const SignInView: () => JSX.Element = () => {
             return
         }
 
-        const axiosInstance = axios.create({
-            headers: {
-                'Authorization': 'allow',
-                'x-api-key': '1yIDLcQTj28kU0fpfZFdCaZoi4dCoEgC8hLh1duf'
-            }
-        });
-        const endPoint = process.env.REACT_APP_SIGNIN_API as string;
-        const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID as string;
-        const body = {code, client_id: clientId};
-
-        // void await viewModel.signIn(googleOneTimeCode) // MEMO: 非同期の返事が待たれない。。書き方の調査必要。
-        void axiosInstance.post(endPoint, body)
+        void viewModel.signIn(googleOneTimeCode)
             .then(response => {
                 console.log('googleLogin')
                 console.log(response)
-                void swal("Success", "response", "success").then(res => {
+                void swal("おかえりなさい", response.data.message, "success").then(res => {
                     console.log('成功', res);
 
                     // ユーザーの認証情報のストアを更新
@@ -79,7 +68,7 @@ const SignInView: () => JSX.Element = () => {
                 });
             }).catch((er) => {
                 console.log(er);
-                void swal("error", "error", "error").then(error => {
+                void swal("Whoops !", er.message, "error").then(error => {
                     // ログイン画面へ遷移
                     console.log(error);
                     window.location.href = '/signin';
