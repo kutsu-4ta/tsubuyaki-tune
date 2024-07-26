@@ -23,7 +23,7 @@ Resources:
   # ========================================================================================================
   # DynamoDB
   # ========================================================================================================
-  UniteTuneDynamo:
+  TT-UserTable:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: !Ref authTableName
@@ -38,10 +38,26 @@ Resources:
         WriteCapacityUnits: 5
       StreamSpecification:
         StreamViewType: NEW_IMAGE
+
+  TT-ProfileTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref profileTableName
+      KeySchema:
+        - AttributeName: uid
+          KeyType: HASH
+      AttributeDefinitions:
+        - AttributeName: uid
+          AttributeType: S
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
   # ========================================================================================================
   # APIGateway
   # ========================================================================================================
-  UniteTuneApiGateway:
+  TT-ApiGateway:
     Type: AWS::Serverless::Api
     Properties:
       StageName: Dev
@@ -59,7 +75,7 @@ Resources:
         AllowHeaders: "'*'"
         AllowOrigin: "'*'"
     Metadata:
-      SamResourceId: UniteTuneApiGateway
+      SamResourceId: TT-ApiGateway
   # ========================================================================================================
   # オーソライズ関数
   # ========================================================================================================
@@ -102,7 +118,7 @@ Resources:
             Path: /oauth/google/signin
             Method: post
             RestApiId:
-              Ref: UniteTuneApiGateway
+              Ref:TT-ApiGateway
       # Lambdaの環境変数
       Environment:
         Variables:
@@ -135,4 +151,4 @@ Outputs:
   # GoogleSignInAPI
   GoogleSingInFunction:
     Description: "Google OAuth Lambda Function ARN"
-    Value: !Sub "https://${UniteTuneApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Dev/oauth/google/"
+    Value: !Sub "https://${TsubuyakiTuneApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Dev/oauth/google/signin"

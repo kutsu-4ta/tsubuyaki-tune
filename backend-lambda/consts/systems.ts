@@ -14,6 +14,7 @@ export enum Messages {
 export enum ErrorMessages {
     BAD_INPUT = "Bad Input for Class",
     CRUD_CREATE = "Failed to Create",
+    CRUD_UPDATE = "Failed to Update",
 }
 
 /**

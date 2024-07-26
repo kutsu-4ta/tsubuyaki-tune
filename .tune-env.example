@@ -5,7 +5,11 @@
 #
 # 使用にあたってはドキュメントを確認してください。
 #****************************************
+# ユーザー認証テーブル
 authTableName=''
-region='a'
+# リージョン
+region=''
+# Unite-TuneのGoogle認証アプリを使用
 googleClientSecret=''
+# OAUTHリダイレクトURL
 googleRedirectUrl=''

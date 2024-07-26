@@ -1,10 +1,11 @@
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, ScanCommand, UpdateCommand} from "@aws-sdk/lib-dynamodb";
+import {DynamoDBClient} from "@aws-sdk/client-dynamodb";
+import {ScanCommand} from "@aws-sdk/lib-dynamodb";
 import LambdaEvent from "../Utility/LambdaEventIF";
 import {PostRequest} from "../Utility/Http/PostRequest";
-import {GetRequest} from "../Utility/Http/GetRequest";
-import {decodeJwtTokenResponseType, OAuthResponse, RequestInputIF} from "./GoogleSignInFunctionIF";
+import {OAuthResponse, RequestInputIF} from "./GoogleSignInFunctionIF";
 import {ENVIRONMENT, ErrorMessages, Messages} from "../../consts/systems";
+import {User} from "../../models/User";
+import {GoogleOAuth} from "../Utility/AuthManager/googleOAuth";
 
 /**
  * OAuthの流れ
@@ -24,15 +25,19 @@ export const lambdaHandler = async (event: LambdaEvent): Promise<any> => {
 
         // OAuth実行
         const oAuthResponse = await fetchAccessToken(requestInput);
+
         // ユーザーの詳細な認証情報
-        const detailUserInfo = await fetchAuthInfoDetail(oAuthResponse);
+        const detailUserInfo = await GoogleOAuth.fetchAuthInfoDetail({
+            idToken: oAuthResponse.id_token,
+            accessToken: oAuthResponse.access_token
+        });
 
         // ユーザを取得
         let user = await getUser(detailUserInfo.email);
 
-        // 新規登録
         if (user == null) {
-            user = await createUser(oAuthResponse, detailUserInfo);
+            // 新規登録
+            user = await User.createUser({email: detailUserInfo.email, accessToken: oAuthResponse.access_token});
             // ログイン
             user?.login();
             return {
@@ -70,89 +75,10 @@ export const lambdaHandler = async (event: LambdaEvent): Promise<any> => {
 };
 
 /**
- * 新規ユーザーを作成する
- * @param oAuthResponse
- * @param detailUserInfo
- */
-async function createUser(oAuthResponse: OAuthResponse, detailUserInfo: decodeJwtTokenResponseType): Promise<User> {
-    console.log("user is null");
-    // 発番するUserIdを算出
-    // ユーザーチェック
-    const client = new DynamoDBClient({region: ENVIRONMENT.region});
-    const docClient = DynamoDBDocumentClient.from(client);
-
-    // 一意の値を生成
-    const newUserId = await getNewUserId(client);
-    // const uid = uuidv4() as string; // TODO: DBでユニークチェックが必要 Lambadaレイヤー作成後に使える
-    const uid = 'not_use_this_is_under_construction'+ `${newUserId}`; // TODO:仮
-
-    //　ユーザー作成
-    const updateCommand = new UpdateCommand({
-        TableName: ENVIRONMENT.authTableName,
-        Key: {
-            userId: `${newUserId}`
-        },
-        UpdateExpression: "set accessToken = :accessToken, email = :email, uid = :uid",
-        ExpressionAttributeValues: {
-            ":accessToken": oAuthResponse.access_token,
-            ":email": detailUserInfo.email,
-            ":uid": uid
-        },
-        ReturnValues: "ALL_NEW",
-    });
-    const updateResult = await docClient.send(updateCommand);
-    console.log("updateResult");
-    console.log(updateResult);
-
-    const createdUserId = updateResult!.Attributes!.userId! as string;
-    const createdUid = updateResult!.Attributes!.uid as string;
-    const email = updateResult!.Attributes!.email! as string;
-    const createdAccessToken = updateResult!.Attributes!.accessToken! as string;
-
-    return await User.createInstance({
-        userId: createdUserId,
-        uid: createdUid,
-        email: email,
-        accessToken: createdAccessToken
-    });
-}
-
-/**
- * ユーザーの詳細情報を問い合わせる
- */
-async function fetchAuthInfoDetail(oAuthResponse: OAuthResponse): Promise<decodeJwtTokenResponseType> {
-    return await doDecodeJWTToken(oAuthResponse).then((response: decodeJwtTokenResponseType) => {
-        if (!response.email) {
-            console.error(response);
-            throw new Error(Messages.INTERNAL_SERVER_ERROR);
-        }
-        return response;
-    }).catch((err) => {
-        console.error(err);
-        throw new Error(Messages.INTERNAL_SERVER_ERROR);
-    });
-}
-
-/**
- * Googleのサーバーに問い合わせてJWTトークンのデコードを行う
- */
-function doDecodeJWTToken(oAuthResponse: OAuthResponse): Promise<decodeJwtTokenResponseType> {
-    const getRequest = new GetRequest({
-        hostname: 'www.googleapis.com',
-        path: `/oauth2/v1/userinfo?id_toke=${oAuthResponse.id_token}`,
-        headers: {
-            'Authorization': `Bearer ${oAuthResponse.access_token}`
-        }
-    });
-
-    return getRequest.get();
-}
-
-/**
  * Googleの認証サーバーからアクセストークンを受け取る
  * @param requestInput
  */
-function  fetchAccessToken(requestInput: RequestInput): Promise<OAuthResponse> {
+function fetchAccessToken(requestInput: RequestInput): Promise<OAuthResponse> {
     const postRequest = new PostRequest({
         hostname: 'www.googleapis.com',
         port: 443,
@@ -171,35 +97,10 @@ function  fetchAccessToken(requestInput: RequestInput): Promise<OAuthResponse> {
 }
 
 /**
- * 新しいユーザーIDを発番する
- * @param scanResult
- */
-const getNewUserId = async (client: DynamoDBClient): Promise<number> => {
-    const scanParams = {
-        TableName: ENVIRONMENT.authTableName,
-    };
-    const scanCommand = new ScanCommand(scanParams);
-    const scanResult = await client.send(scanCommand);
-
-    let newUserId = 1;
-    if (scanResult.Count === 0) {
-        return newUserId;
-    }
-
-    // increment logic
-    for (const item of scanResult.Items!) {
-        if (newUserId < item.userId) {
-            newUserId = item.userId;
-        }
-    }
-    return Number(newUserId) + 1;
-};
-
-/**
  * Userを取得する
  * @param email
  */
-const getUser = async (email: string ): Promise<User | null> => {
+const getUser = async (email: string): Promise<User | null> => {
     // ユーザーチェック
     const client = new DynamoDBClient({region: ENVIRONMENT.region});
     const scanParams = {
@@ -209,10 +110,9 @@ const getUser = async (email: string ): Promise<User | null> => {
     const scanCommand = new ScanCommand(scanParams);
     const scanResult = await client.send(scanCommand);
 
-    if(scanResult.Items == undefined) {
+    if (scanResult.Items == undefined) {
         console.error("item is undefined");
-        // TODO: エラーレスポンス
-        new Error(Messages.INTERNAL_SERVER_ERROR);
+        throw new Error(Messages.INTERNAL_SERVER_ERROR);
     }
 
     console.log("========scanResult========");
@@ -222,7 +122,7 @@ const getUser = async (email: string ): Promise<User | null> => {
     console.log(scanResult.Items![1]);
 
     //　ユーザーが存在している場合はサインイン
-    for(let i = 0; i < scanResult.Items!.length; i++) {
+    for (let i = 0; i < scanResult.Items!.length; i++) {
         const user = scanResult.Items![i];
         if (user.email === email) {
             console.log("user find!");
@@ -237,51 +137,6 @@ const getUser = async (email: string ): Promise<User | null> => {
     return null;
 };
 
-class User {
-    private constructor(
-        public readonly userId: string,
-        public readonly uid: string,
-        public readonly email: string,
-        public readonly accessToken: string
-    ) {
-    }
-
-    static async createInstance(authInfo: { userId: string, uid: string, email: string, accessToken: string }): Promise<User> {
-        return new User(authInfo.userId, authInfo.uid, authInfo.email, authInfo.accessToken);
-    }
-
-    /**
-     * ログインする
-     */
-    public async login() {
-
-        const accessToken = this.accessToken;
-        // const timeStamp = this.timestamp;
-
-        await this.updateAccessToken(accessToken);
-    }
-
-    /**
-     * アクセストークンを更新する
-     */
-    private async updateAccessToken(accessToken: string): Promise<void> {
-        const client = new DynamoDBClient({region: ENVIRONMENT.region});
-        const docClient = DynamoDBDocumentClient.from(client);
-        const updateCommand = new UpdateCommand({
-            TableName: ENVIRONMENT.authTableName,
-            Key: {
-                userId: this.userId
-            },
-            UpdateExpression: "set accessToken = :accessToken",
-            ExpressionAttributeValues: {
-                ":accessToken": accessToken,
-            },
-            ReturnValues: "ALL_NEW",
-        });
-        await docClient.send(updateCommand);
-    }
-}
-
 /**
  * このlambdaHandlerでの入力の値オブジェクト
  */
@@ -289,7 +144,7 @@ class RequestInput {
     public readonly code: string
     public readonly clientId: string
 
-   private constructor(property: RequestInputIF) {
+    private constructor(property: RequestInputIF) {
         this.code = property.code;
         this.clientId = property.clientId;
     }
