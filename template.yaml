@@ -16,7 +16,7 @@ Description: >
   tsubuyaki-tune
 
   Sample SAM Template for tsubuyaki-tune
-  
+
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
@@ -26,7 +26,7 @@ Resources:
   # ========================================================================================================
   # DynamoDB
   # ========================================================================================================
-  TT-UserTable:
+  TTUserTable:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: !Ref authTableName
@@ -42,7 +42,7 @@ Resources:
       StreamSpecification:
         StreamViewType: NEW_IMAGE
 
-  TT-ProfileTable:
+  TTProfileTable:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: !Ref profileTableName
@@ -60,7 +60,7 @@ Resources:
   # ========================================================================================================
   # APIGateway
   # ========================================================================================================
-  TT-ApiGateway:
+  TsubuyakiTuneApiGateway:
     Type: AWS::Serverless::Api
     Properties:
       StageName: Dev
@@ -121,7 +121,7 @@ Resources:
             Path: /oauth/google/signin
             Method: post
             RestApiId:
-              Ref:TT-ApiGateway
+              !Ref TsubuyakiTuneApiGateway
       # Lambdaの環境変数
       Environment:
         Variables:
