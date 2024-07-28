@@ -44,13 +44,19 @@ export class User {
             throw new Error(ErrorMessages.CRUD_READ);
         }
 
+        // ユーザーのインスタンスを生成
         const userTableAttributes = attributesList[0];
-        return User.createInstance({
+        const user = await User.createInstance({
             userId: userTableAttributes.userId,
             uid: userTableAttributes.uid,
             email: userTableAttributes.email,
             accessToken: userTableAttributes.accessToken
-        })
+        });
+
+        // プロフィールをセット
+        user.profile = await Profile.fetchProfile({uid: user.uid});
+
+        return user;
     }
 
     /**
@@ -94,36 +100,12 @@ export class User {
             accessToken: item.accessToken
         });
 
-        const defaultNickName = "user name" + user.uid;
+        const defaultNickName = "user" + user.uid;
         const defaultIconImagePath = "";
-        const profile = Profile.createInstance({uid: user.uid, nickName: "", iconImagePath: ""})
+        user.profile = Profile.createInstance({uid: user.uid, nickName: defaultNickName, iconImagePath: defaultIconImagePath})
 
         return user;
 
-    }
-
-    /**
-     * DBからユーザーのプロフィールをセットする
-     */
-    private async setProfileByRecord(): Promise<boolean> {
-        // プロフィール問い合わせ
-        const profileRepository = new ProfileRepository();
-        const allRecords = await profileRepository.getAll();
-        const profileAttributesList = allRecords.getAsTableAttributes();
-
-        // ガード
-        if (DataValidator.isEmpty(profileAttributesList)) {
-            return false;
-        }
-
-        // セット
-        const profileAttributes = profileAttributesList[0];
-        this.profile = await Profile.createInstance({
-            uid: this.uid,
-            nickName: profileAttributes.nickName,
-            iconImagePath: profileAttributes.iconImagePath
-        });
-        return true;
     }
 
     /**

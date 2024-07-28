@@ -77,7 +77,7 @@ export class UserRepository extends BaseRepository {
         // 一意の値を生成
         const newUserId = await this.getNewUserId();
         // const uid = uuidv4() as string; // TODO: DBでユニークチェックが必要 Lambadaレイヤー作成後に使える
-        const uid = 'not_use_this_is_under_construction'+ `${newUserId}`; // TODO:仮
+        const uid = `sfa${newUserId}sgjoii39j79` + `${newUserId}` + `17o32jhawklkceof` + `${newUserId}`; // TODO:仮
 
         //　ユーザー作成
         const updateCommand = new UpdateCommand({

@@ -46,7 +46,7 @@ const SignInView: () => JSX.Element = () => {
             .then(response => {
                 console.log('googleLogin')
                 console.log(response)
-                void swal("おかえりなさい", response.data?.message ?? 'undefined', "success").then(res => {
+                void swal("おかえりなさい", response.data.message ?? 'undefined', "success").then(res => {
                     console.log('成功', res);
 
                     // ユーザーの認証情報のストアを更新
@@ -58,9 +58,8 @@ const SignInView: () => JSX.Element = () => {
 
                     // ユーザー情報のストアを更新
                     setProfile({
-                        // role: response.data.role,
                         nickName: response.data?.nickName ?? 'user',
-                        iconImage: response.data?.iconImage ?? '',
+                        iconImage: response.data?.iconImagePath ?? '',
                     });
 
                     // ホーム画面へ遷移

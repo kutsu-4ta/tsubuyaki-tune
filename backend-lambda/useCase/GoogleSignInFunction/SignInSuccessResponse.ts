@@ -4,8 +4,10 @@ import {ResponseHeaders} from "../../http/response/ResponseIF";
 export interface SignInResponseBody {
     message: string
     uid: string,
+    accessToken: string
     email: string,
-    nickName: string
+    nickName: string,
+    iconImagePath: string
 }
 
 export class SignInSuccessResponse extends BaseHttpResponse {
@@ -17,10 +19,12 @@ export class SignInSuccessResponse extends BaseHttpResponse {
             'Access-Control-Allow-Headers': 'Content-Type, Authorization'
         };
         const body = {
-                message: responseBody.message,
-                uid:responseBody.uid,
-                email: responseBody.email,
-                nickName: responseBody.nickName
+            message: responseBody.message,
+            uid: responseBody.uid,
+            accessToken: responseBody.accessToken,
+            email: responseBody.email,
+            nickName: responseBody.nickName,
+            iconImagePath: responseBody.iconImagePath
         }
 
         super({

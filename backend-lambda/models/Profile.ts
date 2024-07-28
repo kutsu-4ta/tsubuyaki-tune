@@ -1,4 +1,5 @@
 import {ProfileRepository} from "../db/Repository/ProfileTable/ProfileRepository";
+import {ProfileTableAttributes} from "../db/Repository/ProfileTable/ProfileAttributes";
 
 export class Profile {
     public profileRepository: ProfileRepository = new ProfileRepository();
@@ -8,6 +9,26 @@ export class Profile {
         public readonly nickName: string,
         public readonly iconImagePath: string
     ) {
+    }
+
+    /**
+     * プロフィールを取得する
+     * @param key
+     */
+    static async fetchProfile(key: { uid: string }): Promise<Profile | null> {
+        const profileRepository = new ProfileRepository();
+        const all = await profileRepository.getAll()
+        const profileTableAttributes = all.filteredByMatchUid(key.uid).getFirstAsTableAttributes();
+
+        if (profileTableAttributes === null) {
+            return null;
+        }
+
+        return Profile.createInstance({
+            uid: profileTableAttributes.uid,
+            nickName: profileTableAttributes.nickName,
+            iconImagePath: profileTableAttributes.iconImagePath
+        });
     }
 
     /**

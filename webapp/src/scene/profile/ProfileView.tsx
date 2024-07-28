@@ -14,25 +14,26 @@ const ProfileView = () => {
     /**
      * プロフィールを取得する
      */
-    const getProfile = (endPoint: string, params: { uid: string}): void => {
-        void axios.get(`${endPoint}/${params.uid}`).then((response) => {
-            console.log(response)
-                console.log('成功', response);
-                // ユーザー情報のストアを更新
-                setProfile({
-                    role: response.data.role,
-                    nickName: response.data.nickName,
-                    iconImage: response.data.iconImage,
-                });
-                console.log(profile);
-        }).catch((error) => {
-            console.log('失敗', error);
-        });
-    }
+    // const getProfile = (endPoint: string, params: { uid: string}): void => {
+    //     void axios.get(`${endPoint}/${params.uid}`).then((response) => {
+    //         console.log(response)
+    //             console.log('成功', response);
+    //             // ユーザー情報のストアを更新
+    //             setProfile({
+    //                 role: response.data.role,
+    //                 nickName: response.data.nickName,
+    //                 iconImage: response.data.iconImage,
+    //             });
+    //             console.log(profile);
+    //     }).catch((error) => {
+    //         console.log('失敗', error);
+    //     });
+    // }
 
     useEffect(()=>{
-        console.log('実行')
-        getProfile("http://localhost:8000/api/v1/profile", {uid: authentication.uid})
+        console.log('実行');
+        console.log(profile);
+        // getProfile("http://localhost:8000/api/v1/profile", {uid: authentication.uid})
     return (() => {
     })
 }, [])

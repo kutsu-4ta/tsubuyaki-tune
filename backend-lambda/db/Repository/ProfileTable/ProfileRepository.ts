@@ -53,15 +53,6 @@ export class ProfileRepository extends BaseRepository {
     }
 
     /**
-     * レコードの配列の中から一致するレコードを取得する
-     * HACK:本当はDynamoDBの取得で行いたい...
-     */
-    public filteredByMatchEmail(expected: string) {
-        this.records.filter((record) => record.email === expected);
-        return this
-    }
-
-    /**
      * プロフィールレコードを新規作成する
      * @param props
      */

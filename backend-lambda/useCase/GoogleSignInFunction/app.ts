@@ -65,8 +65,10 @@ export const lambdaHandler = async (event: LambdaEvent): Promise<any> => {
             {
                 message: responseMessage,
                 uid: user.uid,
+                accessToken: user.accessToken,
                 email: user.email,
-                nickName: user.profile?.nickName ?? ''
+                nickName: user.profile?.nickName ?? '',
+                iconImagePath: user.profile?.iconImagePath ?? ''
             });
 
         console.log(httpResponse.returnResponse());
