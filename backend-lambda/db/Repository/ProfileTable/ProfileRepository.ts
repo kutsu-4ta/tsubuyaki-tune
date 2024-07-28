@@ -12,7 +12,7 @@ export class ProfileRepository extends BaseRepository {
     constructor() {
         super({
             tableName: ENVIRONMENT.profileTableName,
-            pKey: 'uid',
+            pKey: 'profileId',
             attributes: [
                 'uid',
                 'nickName',
@@ -72,11 +72,13 @@ export class ProfileRepository extends BaseRepository {
             uid: string
         }): Promise<ProfileTableItemIF> {
 
+        const newProfileId = await this.getNewProfileId()
+
         //　プロフィール作成
         const updateCommand = new UpdateCommand({
             TableName: ENVIRONMENT.profileTableName,
             Key: {
-                uid: `${props.uid}`
+                profileId: `${newProfileId}`
             },
             UpdateExpression: "set uid = :uid, nickName = :nickName, iconImagePath = :iconImagePath",
             ExpressionAttributeValues: {
@@ -96,6 +98,27 @@ export class ProfileRepository extends BaseRepository {
             uid: ""
         }
     }
+
+    /**
+     * 新しいインクリメントIDを発番する　TODO: できれば共通化したい
+     * @private
+     */
+    private async getNewProfileId(): Promise<number> {
+        const all = await this.getAll();
+        const allRecords = all.getRecords();
+
+        let newIncrementId = 1;
+        if (DataValidator.isEmpty(allRecords)) {
+            return newIncrementId;
+        }
+
+        for (const item of allRecords) {
+            if (newIncrementId < item.profileId) {
+                newIncrementId = item.profileId;
+            }
+        }
+        return Number(newIncrementId) + 1;
+    };
 }
 
 interface ProfileTableItemIF {

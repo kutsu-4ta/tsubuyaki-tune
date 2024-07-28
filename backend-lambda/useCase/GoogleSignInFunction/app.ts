@@ -56,7 +56,7 @@ export const lambdaHandler = async (event: LambdaEvent): Promise<any> => {
             const defaultUserIconPath = ""; // TODO: 定数 S3のデフォルトアイコンが格納されているパス
             const profileDraft = Profile.createInstance({
                 uid:newUserTableAttributes.uid,
-                nickName: newUserTableAttributes.userId,
+                nickName: `User${newUserTableAttributes.userId}`,
                 iconImagePath: defaultUserIconPath,
             });
             await profileDraft.updateRecord();
@@ -66,8 +66,9 @@ export const lambdaHandler = async (event: LambdaEvent): Promise<any> => {
                 body: JSON.stringify({
                     message: Messages.SUCCESS + "to create!",
                     data: {
+                        message: "please try login this App.",
                         uid: newUserTableAttributes.uid,
-                        message: "please try login this App."
+                        email: newUserTableAttributes.email,
                     }
                 }),
                 headers: {
@@ -87,8 +88,9 @@ export const lambdaHandler = async (event: LambdaEvent): Promise<any> => {
             body: JSON.stringify({
                 message: Messages.SUCCESS + "to login",
                 data: {
+                    message: "please enjoy this App.",
                     uid: user.uid,
-                    message: "please enjoy this App."
+                    email: user.email
                 }
             }),
             headers: {

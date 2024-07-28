@@ -131,16 +131,10 @@ export class UserRepository extends BaseRepository {
     }
 
     /**
-     * 新しいユーザーIDを発番する
+     * 新しいインクリメントIDを発番する　TODO: できれば共通化したい
      * @private
      */
     private async getNewUserId(): Promise<number> {
-        const scanParams = {
-            TableName: this.tableInfo.tableName,
-        };
-        const scanCommand = new ScanCommand(scanParams);
-        const scanResult = await this.client.send(scanCommand);
-
         const all = await this.getAll();
         const allRecords = all.getRecords();
 
@@ -149,8 +143,6 @@ export class UserRepository extends BaseRepository {
             return newIncrementId;
         }
 
-        // increment logic
-        console.log()
         for (const item of allRecords) {
             if (newIncrementId < item.userId) {
                 newIncrementId = item.userId;

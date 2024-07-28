@@ -47,10 +47,10 @@ Resources:
     Properties:
       TableName: !Ref profileTableName
       KeySchema:
-        - AttributeName: uid
+        - AttributeName: profileId
           KeyType: HASH
       AttributeDefinitions:
-        - AttributeName: uid
+        - AttributeName: profileId
           AttributeType: S
       ProvisionedThroughput:
         ReadCapacityUnits: 5
