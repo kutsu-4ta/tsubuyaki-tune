@@ -27,7 +27,7 @@ export const lambdaHandler = function (event: any, context: any, callback: any) 
     console.log(token)
     console.log('===============================')
     switch (token) {
-        case 'allow':
+        case 'allow': // TODO: ユーザーのアクセストークンと照合する
             callback(null, generatePolicy('user', 'Allow', event.methodArn));
             break;
 
