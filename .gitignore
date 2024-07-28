@@ -173,7 +173,7 @@ Temporary Items
 .apdisk
 
 ### SAM ###
-# Ignore build directories for the AWS Serverless Application Model (SAM)
+# Ignore build directories for the AWS Serverless Application models (SAM)
 # Info: https://aws.amazon.com/serverless/sam/
 # Docs: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-reference.html
 

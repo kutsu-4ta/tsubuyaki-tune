@@ -1,36 +1,36 @@
 import * as https from 'https';
 
-interface PostOptionsIF {
+interface GetOptionsIF {
     hostname: string
-    port: number|null
     path: string
     headers: {}
 }
 
-export class PostRequest {
-    public options: PostOptionsIF;
+/**
+ * LambdaからGETリクエストを投げる際のクラス
+ */
+export class GetRequest {
+    public options: GetOptionsIF;
     public data: {};
 
-    constructor(options: PostOptionsIF) {
+    constructor(options: GetOptionsIF) {
         this.options = options;
         this.data = {};
     }
 
-    public async post(body: {}): Promise<any> {
+    public async get(): Promise<any> {
         const hostName = this.options.hostname;
-        const port = this.options.port;
         const path = this.options.path;
         const headers = this.options.headers;
 
-        const postOptions: https.RequestOptions = {
+        const getOptions: https.RequestOptions = {
             hostname: hostName,
-            port: port,
             path: path,
-            method: 'POST',
+            method: 'GET',
             headers: headers
         }
         return await new Promise((resolve, reject) => {
-            const request = https.request(postOptions, (response: any) => {
+            const request = https.request(getOptions, (response: any) => {
                 let data = '';
                 response.on('data', (chunk: any) => {
                     data += chunk;
@@ -44,8 +44,6 @@ export class PostRequest {
             request.on('error', (error: any) => {
                 reject(error);
             });
-
-            request.write(body);
 
             request.end();
         });

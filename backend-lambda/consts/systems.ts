@@ -4,6 +4,9 @@ export enum StatusCodes {
     INTERNAL_SERVER_ERROR = 500,
 }
 
+/**
+ * 汎用的なレスポンスエラーメッセージ
+ */
 export enum Messages {
     SUCCESS = "Success",
     BAD_REQUEST = "Bad Request",
@@ -11,10 +14,30 @@ export enum Messages {
     DB_QUERY_ERROR = "Operation of DataBase Error"
 }
 
+/**
+ * 汎用的なエラーメッセージ
+ */
 export enum ErrorMessages {
     BAD_INPUT = "Bad Input for Class",
     CRUD_CREATE = "Failed to Create",
+    CRUD_READ = "Failed to Read",
     CRUD_UPDATE = "Failed to Update",
+    NOT_EXIST_PROFILE = "Profile is Not Exits",
+}
+
+/**
+ * メソッドに不正な引数が渡された際に発生するエラー TODO: 仮
+ */
+export enum MethodValidationError {
+    BAD_ARRAY = "Array is Wrong",
+    BAD_INPUT = "Bad Input for Method"
+}
+
+/**
+ * クラスに不正な引数が渡された際に発生するエラー TODO: 仮
+ */
+export enum ClassValidationError {
+    BAD_ARRAY = "Array is Wrong"
 }
 
 /**
@@ -25,4 +48,5 @@ export class ENVIRONMENT {
     static redirectUrl: string = process.env.RedirectUri as string;
     static region: string = process.env.Region as string;
     static authTableName: string = process.env.AuthTableName as string;
+    static profileTableName: string = process.env.ProfileTableName as string;
 }

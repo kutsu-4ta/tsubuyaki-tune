@@ -10,23 +10,55 @@ import {
     GetCommandInput,
     PutCommandInput,
 } from "@aws-sdk/lib-dynamodb";
-import {ENVIRONMENT} from "../../consts/systems";
+import {ENVIRONMENT, Messages} from "../../consts/systems";
 import {RepositoryIF} from "./RepositoryIF";
+import any = jasmine.any;
+import {TableAttributesIF} from "./TableAttributesIF";
 
 interface DynamoDBTableIF {
     tableName: string
     pKey: string
     sKey?: string
+    attributes: string[]
 }
 
 /**
- * DB操作の抽象クラス
+ * DBのテーブルに対応するモデル
  */
 export abstract class BaseRepository implements RepositoryIF {
+    // DynamoDBクライアント
     protected client = new DynamoDBClient({region: ENVIRONMENT.region});
     protected docClient = DynamoDBDocumentClient.from(this.client);
+    // DynamoDBから取得したレコード
+    protected records: Record<string, any>[] = [];
 
     protected constructor(protected readonly tableInfo: DynamoDBTableIF) {
+    }
+
+    /**
+     * 全件取得する
+     */
+    public async getAll(): Promise<this> {
+        // ユーザーチェック
+        const scanParams = {
+            TableName: this.tableInfo.tableName,
+        };
+        const scanCommand = new ScanCommand(scanParams);
+        const scanResult = await this.client.send(scanCommand);
+
+        if (scanResult.Items == undefined) {
+            console.error("item is undefined");
+            throw new Error(Messages.INTERNAL_SERVER_ERROR);
+        }
+        this.records = scanResult.Items;
+        return this;
+    }
+
+    /**
+     * recordsのゲッター
+     */
+    public getRecords(): Record<string, any>[] {
+        return this.records;
     }
 
     /**

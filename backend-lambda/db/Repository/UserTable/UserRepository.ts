@@ -3,12 +3,63 @@
  * 他のモジュールはRepositoryを通してしのみDBとの接続を行うこと.
  */
 import { ScanCommand, UpdateCommand} from "@aws-sdk/lib-dynamodb";
-import {BaseRepository} from "./BaseRepository";
-import {ENVIRONMENT, ErrorMessages} from "../../consts/systems";
+import {BaseRepository} from "../BaseRepository";
+import {ENVIRONMENT, ErrorMessages, Messages} from "../../../consts/systems";
+import {DataValidator} from "../../../utility/DataValidator";
+import {UserTableAttributes, UserTableAttributesIF} from "./UserTableAttributes";
 
 export class UserRepository extends BaseRepository {
     constructor() {
-        super({tableName: ENVIRONMENT.authTableName, pKey: 'userId'});
+        super({
+            tableName: ENVIRONMENT.authTableName,
+            pKey: 'userId',
+            attributes: [
+                'userId',
+                'uid',
+                'email',
+                'accessToken'
+            ],
+        });
+    }
+
+    /**
+     * DynamoDBから取得したレコードをTableAttributesとして取得する
+     */
+    public getAsTableAttributes(): UserTableAttributes[] {
+        return this.records.map((record: Record<string, any>) => {
+            return UserTableAttributes.createInstance(record);
+        });
+    }
+
+    /**
+     * レコードの初めの一つをTableAttributesとして取り出す
+     */
+    public getFirstAsTableAttributes(): UserTableAttributes | null {
+
+        // ガード
+        if (DataValidator.isEmpty(this.records)) {
+            return null;
+        }
+
+        return UserTableAttributes.createInstance(this.records[0]);
+    }
+
+    /**
+     * レコードの配列の中から一致するレコードを取得する
+     * HACK:本当はDynamoDBの取得で行いたい...
+     */
+    public filteredByMatchUid(expected: string) {
+        this.records.filter((record) => record.uid === expected);
+        return this
+    }
+
+    /**
+     * レコードの配列の中から一致するレコードを取得する
+     * HACK:本当はDynamoDBの取得で行いたい...
+     */
+    public filteredByMatchEmail(expected: string) {
+        this.records.filter((record) => record.email === expected);
+        return this
     }
 
     /**
@@ -19,7 +70,7 @@ export class UserRepository extends BaseRepository {
         props: {
             email: string
             accessToken: string
-        }): Promise<UserTableItemIF> {
+        }): Promise<UserTableAttributesIF> {
 
         // 一意の値を生成
         const newUserId = await this.getNewUserId();
@@ -28,7 +79,7 @@ export class UserRepository extends BaseRepository {
 
         //　ユーザー作成
         const updateCommand = new UpdateCommand({
-            TableName: ENVIRONMENT.authTableName,
+            TableName: this.tableInfo.tableName,
             Key: {
                 userId: `${newUserId}`
             },
@@ -41,10 +92,10 @@ export class UserRepository extends BaseRepository {
             ReturnValues: "ALL_NEW",
         });
         const updateResult = await this.docClient.send(updateCommand);
-        console.log("updateResult");
+        console.log(Messages.SUCCESS + "_Update " + this.tableInfo.tableName);
         console.log(updateResult);
 
-        // const item:UserTableItemIF = updateResult
+        // const item:UserTableAttributesIF = updateResult
 
         return {
             userId: "aaaa",
@@ -54,7 +105,6 @@ export class UserRepository extends BaseRepository {
         }
     }
 
-
     /**
      * アクセストークンを更新する
      * @param props
@@ -63,7 +113,7 @@ export class UserRepository extends BaseRepository {
     private async updateAccessToken(props: { accessToken: string, userId: string }): Promise<void | Error> {
         try {
             const updateCommand = new UpdateCommand({
-                TableName: ENVIRONMENT.authTableName,
+                TableName: this.tableInfo.tableName,
                 Key: {
                     userId: props.userId
                 },
@@ -91,26 +141,24 @@ export class UserRepository extends BaseRepository {
         const scanCommand = new ScanCommand(scanParams);
         const scanResult = await this.client.send(scanCommand);
 
-        let newUserId = 1;
-        if (scanResult.Count === 0) {
-            return newUserId;
+        const all = await this.getAll();
+        const allRecords = all.getRecords();
+
+        let newIncrementId = 1;
+        if (DataValidator.isEmpty(allRecords)) {
+            return newIncrementId;
         }
 
         // increment logic
-        for (const item of scanResult.Items!) {
-            if (newUserId < item.userId) {
-                newUserId = item.userId;
+        console.log()
+        for (const item of allRecords) {
+            if (newIncrementId < item.userId) {
+                newIncrementId = item.userId;
             }
         }
-        return Number(newUserId) + 1;
+        return Number(newIncrementId) + 1;
     };
 
 
 }
 
-interface UserTableItemIF {
-    userId: string
-    uid: string
-    email: string
-    accessToken: string
-}

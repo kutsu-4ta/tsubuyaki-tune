@@ -9,6 +9,9 @@ Parameters:
     Type: String
   authTableName:
     Type: String
+  profileTableName:
+    Type: String
+
 Description: >
   tsubuyaki-tune
 
@@ -125,6 +128,7 @@ Resources:
           RedirectUri: !Ref googleRedirectUrl
           ClientSecret: !Ref googleClientSecret
           AuthTableName: !Ref authTableName
+          ProfileTableName: !Ref profileTableName
           Region: !Ref region
       Policies:
         - AmazonDynamoDBFullAccess

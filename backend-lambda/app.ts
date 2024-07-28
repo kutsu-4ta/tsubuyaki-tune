@@ -8,8 +8,8 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
  * @returns {Object} object - API Gateway Lambda Proxy Output Format
  *
  */
-import {lambdaHandler as TokenAuthorizer} from "./functions/TokenAuthorizerFunction/app";
-import {lambdaHandler as GoogleSignIn} from "./functions/GoogleSignInFunction/app";
+import {lambdaHandler as TokenAuthorizer} from "./useCase/TokenAuthorizerFunction/app";
+import {lambdaHandler as GoogleSignIn} from "./useCase/GoogleSignInFunction/app";
 
 export const tokenAuthorizerFunction = TokenAuthorizer;
 export const googleSignInFunction = GoogleSignIn;

@@ -1,9 +1,8 @@
-import {decodeJwtTokenResponseType} from "../../GoogleSignInFunction/GoogleSignInFunctionIF";
-import {Messages} from "../../../consts/systems";
-import {GetRequest} from "../Http/GetRequest";
+import {decodeJwtTokenResponseType} from "../../useCase/GoogleSignInFunction/GoogleSignInFunctionIF";
+import {Messages} from "../../consts/systems";
+import {GetRequest} from "../sendHttp/GetRequest";
 
 export class GoogleOAuth {
-
     /**
      * ユーザーの詳細情報を問い合わせる
      * @param props
