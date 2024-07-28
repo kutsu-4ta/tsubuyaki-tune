@@ -1,7 +1,7 @@
 import {ProfileRepository} from "../db/Repository/ProfileTable/ProfileRepository";
 
 export class Profile {
-    public userRepository: ProfileRepository = new ProfileRepository();
+    public profileRepository: ProfileRepository = new ProfileRepository();
 
     private constructor(
         public readonly uid: string,
@@ -26,7 +26,7 @@ export class Profile {
      * レコードを更新する（Pキーが存在しない場合は新規作成）
      */
     public async updateRecord(): Promise<Profile> {
-        const item = await this.userRepository.createProfile({
+        const item = await this.profileRepository.createProfile({
             uid: this.uid,
             nickName: this.nickName,
             iconImagePath: this.iconImagePath
