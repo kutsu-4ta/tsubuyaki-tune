@@ -46,21 +46,21 @@ const SignInView: () => JSX.Element = () => {
             .then(response => {
                 console.log('googleLogin')
                 console.log(response)
-                void swal("おかえりなさい", response.data.message, "success").then(res => {
+                void swal("おかえりなさい", response.data?.message ?? 'undefined', "success").then(res => {
                     console.log('成功', res);
 
                     // ユーザーの認証情報のストアを更新
                     setAuthentication({
-                        uid: response.data.data.uid,
-                        accessToken: response.data.data.accessToken,
-                        email: response.data.data.email
+                        uid: response.data.uid,
+                        accessToken: response.data.accessToken,
+                        email: response.data.email
                     });
 
                     // ユーザー情報のストアを更新
                     setProfile({
                         // role: response.data.role,
-                        nickName: response.data.data?.nickName ?? 'aaaaaa',
-                        iconImage: response.data.data?.iconImage ?? 'bbbbbb',
+                        nickName: response.data?.nickName ?? 'user',
+                        iconImage: response.data?.iconImage ?? '',
                     });
 
                     // ホーム画面へ遷移

@@ -49,7 +49,7 @@ export class UserRepository extends BaseRepository {
      * HACK:本当はDynamoDBの取得で行いたい...
      */
     public filteredByMatchUid(expected: string) {
-        this.records.filter((record) => record.uid === expected);
+        this.records = this.records.filter((record) => record.uid === expected);
         return this
     }
 
@@ -58,7 +58,9 @@ export class UserRepository extends BaseRepository {
      * HACK:本当はDynamoDBの取得で行いたい...
      */
     public filteredByMatchEmail(expected: string) {
-        this.records.filter((record) => record.email === expected);
+        this.records = this.records.filter(record => record.email === expected);
+        console.log("=========filteredByMatchEmail==========");
+        console.log(this.records);
         return this
     }
 
@@ -95,13 +97,11 @@ export class UserRepository extends BaseRepository {
         console.log(Messages.SUCCESS + "_Update " + this.tableInfo.tableName);
         console.log(updateResult);
 
-        // const item:UserTableAttributesIF = updateResult
-
         return {
-            userId: "aaaa",
-            uid: "aaaa",
-            email: "aaaaa",
-            accessToken: "aaaa"
+            userId: updateResult.Attributes?.userId,
+            uid: updateResult.Attributes?.uid,
+            email: updateResult.Attributes?.email,
+            accessToken: updateResult.Attributes?.accessToken
         }
     }
 

@@ -1,12 +1,13 @@
 import LambdaEvent from "../../http/LambdaEventIF";
 import {PostRequest} from "../../utility/sendHttp/PostRequest";
-import {OAuthResponse} from "./GoogleSignInFunctionIF";
+import {decodeJwtTokenResponseType, OAuthResponse} from "./GoogleSignInFunctionIF";
 import {ENVIRONMENT, ErrorMessages, Messages} from "../../consts/systems";
 import {User} from "../../models/User";
 import {GoogleOAuth} from "../../utility/authManager/googleOAuth";
 import {UserRepository} from "../../db/Repository/UserTable/UserRepository";
 import {GoogleSignInRequestInput} from "./GoogleSignInRequestInput";
 import {Profile} from "../../models/Profile";
+import {SignInSuccessResponse} from "./SignInSuccessResponse";
 
 /**
  * OAuthの流れ
@@ -23,6 +24,7 @@ export const lambdaHandler = async (event: LambdaEvent): Promise<any> => {
         console.log("==SetUp_lambdaHandler==");
         const userRepository = new UserRepository();
         const requestInput = GoogleSignInRequestInput.create(event);
+        let responseMessage = "";
 
         console.log("==Main_lambdaHandler==");
         // OAuth実行
@@ -38,67 +40,37 @@ export const lambdaHandler = async (event: LambdaEvent): Promise<any> => {
         const users = await userRepository.getAll();
         const userTableAttributes = users.filteredByMatchEmail(detailUserInfo.email).getFirstAsTableAttributes();
 
+        console.log(`====${detailUserInfo.email }is exist ?===`);
+        console.log(userTableAttributes !== null);
+
+        let uid = "";
         if (userTableAttributes === null) {
-            // 新規登録
-            const newUser = await User.createUser({
-                email: detailUserInfo.email,
-                accessToken: oAuthResponse.access_token
-            });
-            const newUserTableAttributes = await newUser.getUserAttributes() ?? null;
+            // ユーザー作成
+           　const newUserUserId = await createUser(oAuthResponse, detailUserInfo);
 
-            // 作れたかチェック
-            if (newUserTableAttributes === null) {
-                console.error(newUser);
-                throw new Error(ErrorMessages.CRUD_CREATE);
-            }
-
-            // プロフィールのレコードを作成
-            const defaultUserIconPath = ""; // TODO: 定数 S3のデフォルトアイコンが格納されているパス
-            const profileDraft = Profile.createInstance({
-                uid:newUserTableAttributes.uid,
-                nickName: `User${newUserTableAttributes.userId}`,
-                iconImagePath: defaultUserIconPath,
-            });
-            await profileDraft.updateRecord();
-
-            return {
-                statusCode: 200,
-                body: JSON.stringify({
-                    message: Messages.SUCCESS + "to create!",
-                    data: {
-                        message: "please try login this App.",
-                        uid: newUserTableAttributes.uid,
-                        email: newUserTableAttributes.email,
-                    }
-                }),
-                headers: {
-                    'Access-Control-Allow-Origin': '*',
-                    'Access-Control-Allow-Methods': 'OPTIONS,POST,GET',
-                    'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-                }
-            }
+            // メッセージ更新
+            responseMessage = Messages.SUCCESS + "to create!";
+            uid = newUserUserId??'';
+        }else{
+            responseMessage = Messages.SUCCESS + "to sign in!";
+            uid = userTableAttributes.uid
         }
 
-
-        // 既存ユーザーでログイン
-        const user = await User.fetchUser({uid: userTableAttributes.uid});
+        // ユーザーでログイン
+        const user = await User.fetchUser({uid: uid});
         await user.login();
-        return {
-            statusCode: 200,
-            body: JSON.stringify({
-                message: Messages.SUCCESS + "to login",
-                data: {
-                    message: "please enjoy this App.",
-                    uid: user.uid,
-                    email: user.email
-                }
-            }),
-            headers: {
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'OPTIONS,POST,GET',
-                'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-            }
-        }
+
+        // レスポンスの組み立て
+        const httpResponse: SignInSuccessResponse = new SignInSuccessResponse(
+            {
+                message: responseMessage,
+                uid: user.uid,
+                email: user.email,
+                nickName: user.profile?.nickName ?? ''
+            });
+
+        console.log(httpResponse.returnResponse());
+        return httpResponse.returnResponse();
     } catch (error) {
         console.log("==Catch_lambdaHandler==");
         console.error(error);
@@ -126,4 +98,35 @@ function fetchAccessToken(requestInput: GoogleSignInRequestInput): Promise<OAuth
 
     // OAuth認証を実行
     return postRequest.post(postData);
+}
+
+/**
+ * ユーザーとプロフィールを新規登録する
+ * @param oAuthResponse
+ * @param detailUserInfo
+ */
+async function createUser(oAuthResponse: OAuthResponse, detailUserInfo: decodeJwtTokenResponseType): Promise<string | null> {
+    // 新規登録
+    const newUser = await User.createUser({
+        email: detailUserInfo.email,
+        accessToken: oAuthResponse.access_token
+    });
+
+    // ユーザーが作れているかチェック
+    const newUserTableAttributes = await newUser.getUserAttributes() ?? null;
+    if (newUserTableAttributes === null) {
+        console.error(newUser);
+        throw new Error(ErrorMessages.CRUD_CREATE);
+    }
+
+    // プロフィールのレコードを作成
+    const defaultUserIconPath = ""; // TODO: 定数 S3のデフォルトアイコンが格納されているパス
+    const profileDraft = Profile.createInstance({
+        uid: newUserTableAttributes.uid,
+        nickName: `User${newUserTableAttributes.uid}`,
+        iconImagePath: defaultUserIconPath,
+    });
+    await profileDraft.updateRecord();
+
+    return newUserTableAttributes.uid ?? null;
 }
