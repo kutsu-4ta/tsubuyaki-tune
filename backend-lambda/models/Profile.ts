@@ -1,5 +1,4 @@
 import {ProfileRepository} from "../db/Repository/ProfileTable/ProfileRepository";
-import {ProfileTableAttributes} from "../db/Repository/ProfileTable/ProfileAttributes";
 
 export class Profile {
     public profileRepository: ProfileRepository = new ProfileRepository();

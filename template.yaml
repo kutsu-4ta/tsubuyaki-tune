@@ -11,6 +11,8 @@ Parameters:
     Type: String
   profileTableName:
     Type: String
+  tsubuyakiTableName:
+    Type: String
 
 Description: >
   tsubuyaki-tune
@@ -57,39 +59,59 @@ Resources:
         WriteCapacityUnits: 5
       StreamSpecification:
         StreamViewType: NEW_IMAGE
+
+  TTTsubuyakiTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref tsubuyakiTableName
+      KeySchema:
+        - AttributeName: tsubuyakiId
+          KeyType: HASH
+      AttributeDefinitions:
+        - AttributeName: tsubuyakiId
+          AttributeType: S
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
   # ========================================================================================================
-  # APIGateway
+  # APIGateway 認可なし
   # ========================================================================================================
-  TsubuyakiTuneApiGateway:
+  TsubuyakiTuneSignInApiGateway:
     Type: AWS::Serverless::Api
     Properties:
       StageName: Dev
       EndpointConfiguration:
-        Type: REGIONAL # リージョン最適化に設定
+        Type: REGIONAL
       Auth:
-        DefaultAuthorizer: TokenAuthorizer # デフォルトの認可をトークンオーソライザーに設定
+        DefaultAuthorizer: TokenAuthorizer
         AddApiKeyRequiredToCorsPreflight: false
         Authorizers:
           TokenAuthorizer:
-            FunctionArn: !GetAtt TokenAuthorizerFunction.Arn # SAMとapp.tsで作ったラムダ関数
-        AddDefaultAuthorizerToCorsPreflight: false # Preflight requestの認可を除外するための設定
+            FunctionArn: !GetAtt SignInAuthorizer.Arn
+        AddDefaultAuthorizerToCorsPreflight: false
       Cors:
         AllowMethods: "'GET,OPTIONS,POST'"
         AllowHeaders: "'*'"
         AllowOrigin: "'*'"
     Metadata:
-      SamResourceId: TT-ApiGateway
-  # ========================================================================================================
-  # オーソライズ関数
-  # ========================================================================================================
-  TokenAuthorizerFunction:
+      SamResourceId: TsubuyakiTuneSignInApiGateway
+
+  SignInAuthorizer:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: backend-lambda/
-      Handler: app.tokenAuthorizerFunction
+      CodeUri: backend-lambda
+      Handler: app.signInAuthorizer
       Runtime: nodejs18.x
+      Environment:
+        Variables:
+          AuthTableName: !Ref authTableName
+          Region: !Ref region
+      Policies:
+        - AmazonDynamoDBFullAccess # TODO: readだけでいい
     Metadata:
-      SamResourceId: TokenAuthorizerFunction
+      SamResourceId: SignInAuthorizer
       BuildMethod: esbuild
       BuildProperties:
         Format: esm
@@ -121,7 +143,7 @@ Resources:
             Path: /oauth/google/signin
             Method: post
             RestApiId:
-              !Ref TsubuyakiTuneApiGateway
+              !Ref TsubuyakiTuneSignInApiGateway
       # Lambdaの環境変数
       Environment:
         Variables:
@@ -148,6 +170,102 @@ Resources:
           - "https"
           - "@aws-sdk/client-dynamodb"
           - "@aws-sdk/lib-dynamodb"
+  # ========================================================================================================
+  # APIGateway 認可あり
+  # ========================================================================================================
+  TsubuyakiTuneApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Dev
+      EndpointConfiguration:
+        Type: REGIONAL # リージョン最適化に設定
+      Auth:
+        DefaultAuthorizer: TokenAuthorizer # デフォルトの認可をトークンオーソライザーに設定
+        AddApiKeyRequiredToCorsPreflight: false
+        Authorizers:
+          TokenAuthorizer:
+            FunctionArn: !GetAtt TokenAuthorizerFunction.Arn # SAMとapp.tsで作ったラムダ関数
+        AddDefaultAuthorizerToCorsPreflight: false # Preflight requestの認可を除外するための設定
+      Cors:
+        AllowMethods: "'GET,OPTIONS,POST'"
+        AllowHeaders: "'*'"
+        AllowOrigin: "'*'"
+    Metadata:
+      SamResourceId: TsubuyakiTuneApiGateway
+
+  TokenAuthorizerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend-lambda/
+      Handler: app.tokenAuthorizerFunction
+      Runtime: nodejs18.x
+      Environment:
+        Variables:
+          AuthTableName: !Ref authTableName
+          ProfileTableName: !Ref profileTableName
+          TsubuyakiTableName: !Ref tsubuyakiTableName
+          Region: !Ref region
+      Policies:
+        - AmazonDynamoDBFullAccess # TODO: readだけでいい
+    Metadata:
+      SamResourceId: TokenAuthorizerFunction
+      BuildMethod: esbuild
+      BuildProperties:
+        Format: esm
+        Minify: false
+        OutExtension: # 拡張子を.mjにすることでAWSのコンソールで表示できる
+          - .js=.mjs
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints:
+          - app.ts
+        External:
+          - "@aws-sdk/client-dynamodb"
+          - "@aws-sdk/lib-dynamodb"
+  # ========================================================================================================
+  # AddTsubuyaki関数
+  # ========================================================================================================
+  AddTsubuyakiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend-lambda
+      Handler: app.addTsubuyakiFunction
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      Events:
+        AddTsubuyaki:
+          Type: Api
+          Properties:
+            Path: /tsubuyaki/add
+            Method: post
+            RestApiId:
+              !Ref TsubuyakiTuneApiGateway
+      # Lambdaの環境変数
+      Environment:
+        Variables:
+          AuthTableName: !Ref authTableName
+          ProfileTableName: !Ref profileTableName
+          TsubuyakiTableName: !Ref tsubuyakiTableName
+          Region: !Ref region
+      Policies:
+        - AmazonDynamoDBFullAccess
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Format: esm
+        Minify: false
+        OutExtension: # 拡張子を.mjにすることでAWSのコンソールで表示できる
+          - .js=.mjs
+        Target: "es2020"
+        UseNpmCi: true
+        Sourcemap: true
+        EntryPoints:
+          - app.ts
+        External: # 外部パッケージの追加（ビルドの際に除外される）
+          - "https"
+          - "@aws-sdk/client-dynamodb"
+          - "@aws-sdk/lib-dynamodb"
 # ========================================================================================================
 # 作成したスタック内のリソースの情報を標準出力に表示する
 # ========================================================================================================
@@ -155,4 +273,8 @@ Outputs:
   # GoogleSignInAPI
   GoogleSingInFunction:
     Description: "Google OAuth Lambda Function ARN"
-    Value: !Sub "https://${TsubuyakiTuneApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Dev/oauth/google/signin"
+    Value: !Sub "https://${TsubuyakiTuneSignInApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Dev/oauth/google/signin"
+  # AddTsubuyakiAPI
+  AddTsubuyakiFunction:
+    Description: "Add Tsubuyaki Lambda Function ARN"
+    Value: !Sub "https://${TsubuyakiTuneApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Dev/tsubuyaki/add"

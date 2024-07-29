@@ -49,4 +49,5 @@ export class ENVIRONMENT {
     static region: string = process.env.Region as string;
     static authTableName: string = process.env.AuthTableName as string;
     static profileTableName: string = process.env.ProfileTableName as string;
+    static tsubuyakiTableName: string = process.env.TsubuyakiTableName as string;
 }

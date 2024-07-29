@@ -1,7 +1,9 @@
 import {TsubuyakiDraftIF, TsubuyakiDraftInfoIF, TsubuyakiDraftMetaInfoIF} from "./TsubuyakiDraftIF";
 import ImagePath from "../data/ImagePath";
 import Mention from "../data/Mention";
-import {dateTimeString, hashTagString} from "../data/types";
+import {hashTagString} from "../data/types";
+import axios from "axios";
+import {authenticationState} from "../../atoms/AuthenticationState";
 
 export interface TsubuyakiDraftArgumentIF {
     sentence: string
@@ -66,8 +68,25 @@ export class TsubuyakiDraft implements TsubuyakiDraftIF {
     /**
      * 投稿する
      */
-    public postAsTsubuyaki():void {
-        console.log('投稿する');
+    public async postAsTsubuyaki(accessToken:string): Promise<any> {
+        const endPoint = process.env.REACT_APP_ADD_TSUBUYAKI as string;
+
+        const data = {
+            sentence: this.tsubuyakiDraftInfo.sentence,
+            mentionList: this.tsubuyakiDraftInfo.mentionList,
+            imagePathList: this.tsubuyakiDraftInfo.imagePathList,
+            hashTagListString: this.tsubuyakiDraftInfo.hashTagList,
+            parentTsubuyakiId: this.tsubuyakiDraftMetaInfo.parentTsubuyakiId
+        };
+
+        const axiosInstance = axios.create({
+            headers: {
+                'Authorization': accessToken,
+                'x-api-key': '1yIDLcQTj28kU0fpfZFdCaZoi4dCoEgC8hLh1duf'
+            }
+        });
+
+        return await axiosInstance.post(endPoint, data)
     }
 
     /**

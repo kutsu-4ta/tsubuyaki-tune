@@ -1,7 +1,7 @@
 /**
  * このlambdaHandlerでの入力の値オブジェクト
  */
-import {RequestInputIF} from "./GoogleSignInFunctionIF";
+import {GoogleSignInRequestInputIF} from "./GoogleSignInFunctionIF";
 import {ErrorMessages} from "../../consts/systems";
 import LambdaEvent from "../../http/LambdaEventIF";
 
@@ -9,7 +9,7 @@ export class GoogleSignInRequestInput {
     public readonly code: string
     public readonly clientId: string
 
-    private constructor(property: RequestInputIF) {
+    private constructor(property: GoogleSignInRequestInputIF) {
         this.code = property.code;
         this.clientId = property.clientId;
     }

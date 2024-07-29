@@ -8,28 +8,15 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
  * @returns {Object} object - API Gateway Lambda Proxy Output Format
  *
  */
-import {lambdaHandler as TokenAuthorizer} from "./useCase/TokenAuthorizerFunction/app";
+import {lambdaHandler as SignInAuthorizer} from "./useCase/GoogleSignInFunction/SignInAuthorizer/app";
 import {lambdaHandler as GoogleSignIn} from "./useCase/GoogleSignInFunction/app";
+import {lambdaHandler as TokenAuthorizer} from "./useCase/TokenAuthorizerFunction/app";
+import {lambdaHandler as AddTsubuyaki} from "./useCase/AddTsubuyakiFunction/app";
 
-export const tokenAuthorizerFunction = TokenAuthorizer;
+// 認可なし
+export const signInAuthorizer = SignInAuthorizer;
 export const googleSignInFunction = GoogleSignIn;
 
-// export const app = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-//     try {
-//         return {
-//             statusCode: 200,
-//             body: JSON.stringify({
-//                 message: 'hello world',
-//             }),
-//         };
-//     } catch (err) {
-//         console.log(err);
-//         return {
-//             statusCode: 500,
-//             body: JSON.stringify({
-//                 message: 'some error happened',
-//             }),
-//         };
-//     }
-// };
-
+// 認可あり
+export const tokenAuthorizerFunction = TokenAuthorizer;
+export const addTsubuyakiFunction = AddTsubuyaki;

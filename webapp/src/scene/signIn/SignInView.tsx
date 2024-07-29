@@ -79,7 +79,13 @@ const SignInView: () => JSX.Element = () => {
     // 開発環境においてStrictModeの2回目を無視するフラグ
     let strictModeIgnore = false;
     useEffect(() => {
-        viewModel.setUp({authentication: {uid: authState.uid, email: authState.email}});
+        viewModel.setUp({
+            authentication: {
+                accessToken: authState.accessToken,
+                uid: authState.uid,
+                email: authState.email
+            }
+        });
 
         if (!strictModeIgnore) {
             signIn();

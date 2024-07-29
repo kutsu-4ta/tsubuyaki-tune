@@ -59,6 +59,39 @@ export class User {
         return user;
     }
 
+
+    /**
+     * DBのユーザー情報を元にユーザーモデルを組み立てる
+     */
+    static async fetchUserByAccessToken(props: { accessToken: string }): Promise<User> {
+        // 問い合わせ
+        const userRepository = new UserRepository();
+        const users = await userRepository.getAll();
+        const attributesList = users.filteredByMatchAccessToken(props.accessToken).getAsTableAttributes();
+
+        console.log(props.accessToken);
+        console.log(attributesList);
+        // ガード
+        if (DataValidator.isEmpty(attributesList)) {
+            console.error(users);
+            throw new Error(ErrorMessages.CRUD_READ);
+        }
+
+        // ユーザーのインスタンスを生成
+        const userTableAttributes = attributesList[0];
+        const user = await User.createInstance({
+            userId: userTableAttributes.userId,
+            uid: userTableAttributes.uid,
+            email: userTableAttributes.email,
+            accessToken: userTableAttributes.accessToken
+        });
+
+        // プロフィールをセット
+        user.profile = await Profile.fetchProfile({uid: user.uid});
+
+        return user;
+    }
+
     /**
      * ユーザーを新規作成する
      * 外部から呼び出すための

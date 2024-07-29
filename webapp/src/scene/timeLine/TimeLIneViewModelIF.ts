@@ -1,6 +1,7 @@
 import {Tsubuyaki} from "../../models/Tsubuyaki/Tsubuyaki";
 import {TsubuyakiTable} from "../../models/TsubuyakiTable/TsubuyakiTable";
 import {AuthenticationArgumentIF} from "../../models/Authentication/Authentication";
+import {TsubuyakiDraft} from "../../models/TsubuyakiDraft/TsubuyakiDraft";
 
 export default interface TimeLIneViewModelIF {
     /**
@@ -8,7 +9,7 @@ export default interface TimeLIneViewModelIF {
      */
     setUp(argument: { authentication: AuthenticationArgumentIF }): void
 
-    addTsubuyaki():void
+    addTsubuyaki(tsubuyakiDraft: TsubuyakiDraft, accessToken: string): Promise<void>
 
     loadTimeLine():void
 

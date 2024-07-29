@@ -5,7 +5,7 @@ import Mention from "../data/Mention";
 export interface TsubuyakiDraftIF {
     tsubuyakiDraftInfo: TsubuyakiDraftInfoIF
     tsubuyakiDraftMetaInfo: TsubuyakiDraftMetaInfoIF
-    postAsTsubuyaki():void
+    postAsTsubuyaki(accessToken: string): void
     saveAsDraft():void
 }
 

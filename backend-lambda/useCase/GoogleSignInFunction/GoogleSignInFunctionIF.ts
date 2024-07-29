@@ -1,7 +1,7 @@
 /**
  * 【仕様】このlambdaHandlerで入力として受け取る値
  */
-export interface RequestInputIF {
+export interface GoogleSignInRequestInputIF {
     code:string
     clientId:string
 }

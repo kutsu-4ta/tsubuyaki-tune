@@ -20,6 +20,7 @@ import {TimeLineViewModel} from "./TimeLineViewModel";
 import {TsubuyakiDraft} from "../../models/TsubuyakiDraft/TsubuyakiDraft";
 import ImagePath from "../../models/data/ImagePath";
 import Mention from "../../models/data/Mention";
+import {hashTagString} from "../../models/data/types";
 
 const timeLineViewModel = new TimeLineViewModel();
 
@@ -81,7 +82,13 @@ const TimeLineView = () => {
         if (tsubuyakiDraft === null) {
             return
         }
-        const response = await viewModel.addTsubuyaki();
+        const response = await viewModel.addTsubuyaki(tsubuyakiDraft, authState.accessToken).then((response) => {
+            console.log('成功', response);
+            return response;
+        }).catch((error) => {
+            console.log('失敗', error);
+            return error;
+        });
         console.log(response);
     }
 
@@ -109,7 +116,13 @@ const TimeLineView = () => {
     }
 
     useEffect(() => {
-        viewModel.setUp({authentication: {uid: authState.uid, email: authState.email}});
+        viewModel.setUp({
+            authentication: {
+                accessToken: authState.accessToken,
+                uid: authState.uid,
+                email: authState.email
+            }
+        });
         // タイムラインの初期化
         setTsubuyakiList(viewModel.tsubuyakiTable.getTsubuyakiList());
     }, []);

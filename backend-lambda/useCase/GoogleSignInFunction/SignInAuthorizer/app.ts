@@ -1,8 +1,3 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import {User} from "../../models/User";
-import {Messages} from "../../consts/systems";
-
-
 /**
  * Lambdaのトークンオーソライザーハンドラー
  * @param event
@@ -23,23 +18,27 @@ export const lambdaHandler = async function (event: any, context: any, callback:
             body: {}
         };
     }
+    // 必ず通す
+    const token = event.authorizationToken;
+    switch (token) {
+        case 'allow':
+            callback(null, generatePolicy('user', 'Allow', event.methodArn));
+            break;
 
-    const accessToken = event.authorizationToken;
-    console.log(accessToken);
-    const authUser = await User.fetchUserByAccessToken({accessToken: accessToken});
+        case 'deny':
+            callback(null, generatePolicy('user', 'Deny', event.methodArn));
+            break;
 
-    // 認可失敗
-    if (authUser === null) {
-        console.error(Messages.BAD_REQUEST);
-        callback(null, generatePolicy('user', 'Deny', event.methodArn));
+        case 'unauthorized':
+            callback("Unauthorized");   // Return a 401 Unauthorized response
+            break;
+
+        default:
+            callback("Error: Invalid token"); // Return a 500 Invalid token response
+            break;
     }
 
-    console.log('==============auth_user=================');
-    console.log(authUser);
-    console.log('===============================');
 
-    // 認可成功
-    callback(null, generatePolicy('user', 'Allow', event.methodArn));
 };
 
 const generatePolicy = (principalId: any, effect: any, resource: any) => {

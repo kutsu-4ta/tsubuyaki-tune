@@ -4,7 +4,6 @@ import {TsubuyakiDraft, TsubuyakiDraftArgumentIF} from "../../models/TsubuyakiDr
 import ImagePath from "../../models/data/ImagePath";
 import Mention from "../../models/data/Mention";
 import Authentication, {AuthenticationArgumentIF} from "../../models/Authentication/Authentication";
-import axios from "axios";
 
 export class TimeLineViewModel implements TimeLIneViewModelIF {
     protected authState:Authentication = Authentication.initAuthentication();
@@ -37,42 +36,9 @@ export class TimeLineViewModel implements TimeLIneViewModelIF {
     /**
      * Tsubuyakiを投稿する
      */
-    async addTsubuyaki(): Promise<any> {
-        // 下書きを作成する
-        const draftArgument = this._devCreateDraft();
-        const draft = TsubuyakiDraft.createTsubuyakiDraftInstance(draftArgument);
-        draft.postAsTsubuyaki();
-        console.log(draft);
-
-        //TODO: 定数
-        const endPoint = 'http://localhost:8000/api/vi/profile/tsubuyaki/add';
-
-        console.log(draft.tsubuyakiDraftInfo.mentionList);
-        const data = {
-            mentionList: draft.tsubuyakiDraftInfo.mentionList,
-            sentence: draft.tsubuyakiDraftInfo.sentence,
-            imagePathList: draft.tsubuyakiDraftInfo.imagePathList,
-            hashTagListString: draft.tsubuyakiDraftInfo.hashTagList,
-            parentTsubuyakiId: draft.tsubuyakiDraftMetaInfo.parentTsubuyakiId
-        };
-
-        const axiosInstance = axios.create({
-            withCredentials: true,
-            withXSRFToken: true,
-        });
-
-        // const CSRF_ROOT = 'http://localhost:8000/sanctum/csrf-cookie';
-        // void axios.get(CSRF_ROOT,{withCredentials: true, withXSRFToken: true}).then((res) => {
-            void axiosInstance.post(endPoint, data).then((response) => {
-                console.log('成功', response);
-                return response;
-            }).catch((error) => {
-                console.log('失敗', error);
-                return error;
-            });
-        // }).catch((error) => {
-        //     console.log(error)
-        // });
+    public async addTsubuyaki(tsubuyakiDraft: TsubuyakiDraft, accessToken:string) {
+        console.log(tsubuyakiDraft);
+        return tsubuyakiDraft.postAsTsubuyaki(accessToken);
     };
 
 

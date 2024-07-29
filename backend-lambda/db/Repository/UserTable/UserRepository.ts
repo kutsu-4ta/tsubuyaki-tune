@@ -65,6 +65,18 @@ export class UserRepository extends BaseRepository {
     }
 
     /**
+     * レコードの配列の中から一致するレコードを取得する
+     * HACK:本当はDynamoDBの取得で行いたい...
+     */
+    public filteredByMatchAccessToken(expected: string) {
+        this.records = this.records.filter(record => record.accessToken === expected);
+        console.log("=========filteredByMatchAccessToken==========");
+        console.log(this.records);
+        return this
+    }
+
+
+    /**
      * ユーザーレコードを新規作成する
      * @param props
      */
