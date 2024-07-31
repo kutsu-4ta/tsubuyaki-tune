@@ -1,4 +1,4 @@
-import LambdaEvent from "../../http/LambdaEventIF";
+import LambdaEvent from "../../http/request/LambdaEventIF";
 import {PostRequest} from "../../utility/sendHttp/PostRequest";
 import {decodeJwtTokenResponseType, OAuthResponse} from "./GoogleSignInFunctionIF";
 import {ENVIRONMENT, ErrorMessages, Messages} from "../../consts/systems";
@@ -29,11 +29,12 @@ export const lambdaHandler = async (event: LambdaEvent): Promise<any> => {
         console.log("==Main_lambdaHandler==");
         // OAuth実行
         const oAuthResponse = await fetchAccessToken(requestInput);
+        const latestAccessToken = oAuthResponse.access_token;
 
         // ユーザーの詳細な認証情報
         const detailUserInfo = await GoogleOAuth.fetchAuthInfoDetail({
             idToken: oAuthResponse.id_token,
-            accessToken: oAuthResponse.access_token
+            accessToken: latestAccessToken
         });
 
         // ユーザを取得
@@ -58,14 +59,14 @@ export const lambdaHandler = async (event: LambdaEvent): Promise<any> => {
 
         // ユーザーでログイン
         const user = await User.fetchUser({uid: uid});
-        await user.login();
+        await user.login(latestAccessToken);
 
         // レスポンスの組み立て
         const httpResponse: SignInSuccessResponse = new SignInSuccessResponse(
             {
                 message: responseMessage,
                 uid: user.uid,
-                accessToken: user.accessToken,
+                accessToken: latestAccessToken,
                 email: user.email,
                 nickName: user.profile?.nickName ?? '',
                 iconImagePath: user.profile?.iconImagePath ?? ''

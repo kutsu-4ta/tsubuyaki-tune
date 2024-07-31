@@ -4,6 +4,8 @@ import {TsubuyakiDraft, TsubuyakiDraftArgumentIF} from "../../models/TsubuyakiDr
 import ImagePath from "../../models/data/ImagePath";
 import Mention from "../../models/data/Mention";
 import Authentication, {AuthenticationArgumentIF} from "../../models/Authentication/Authentication";
+import {Tsubuyaki} from "../../models/Tsubuyaki/Tsubuyaki";
+import axios from "axios";
 
 export class TimeLineViewModel implements TimeLIneViewModelIF {
     protected authState:Authentication = Authentication.initAuthentication();
@@ -67,17 +69,20 @@ export class TimeLineViewModel implements TimeLIneViewModelIF {
     }
 
     /**
-     * TODO:実装
+     * タイムラインを読み込む
+     * @param props
      */
-    loadTimeLine(): void {
+    async loadTimeLine(props: { accessToken: string }): Promise<Tsubuyaki[]> {
         console.log('loadTimeLine');
-        this.tsubuyakiTable.dev_fetchTsubuyakiList2();
-    }
-
-    /**
-     * TODO:実装
-     */
-    reloadTimeLine(): void {
+        // つふやきを取得する
+        const endPoint = process.env.REACT_APP_FETCH_TSUBUYAKI as string;
+        const axiosInstance = axios.create({
+            headers: {
+                'Authorization': props.accessToken,
+                'x-api-key': '1yIDLcQTj28kU0fpfZFdCaZoi4dCoEgC8hLh1duf'
+            }
+        });
+        return await axiosInstance.get(endPoint);
     }
 
     /**

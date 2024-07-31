@@ -18,6 +18,7 @@ export enum Messages {
  * 汎用的なエラーメッセージ
  */
 export enum ErrorMessages {
+    UNAUTHORIZED = "User is Unauthorized",
     BAD_INPUT = "Bad Input for Class",
     CRUD_CREATE = "Failed to Create",
     CRUD_READ = "Failed to Read",

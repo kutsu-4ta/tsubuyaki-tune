@@ -11,9 +11,7 @@ export default interface TimeLIneViewModelIF {
 
     addTsubuyaki(tsubuyakiDraft: TsubuyakiDraft, accessToken: string): Promise<void>
 
-    loadTimeLine():void
-
-    reloadTimeLine():void
+    loadTimeLine(props: { accessToken: string }): Promise<Tsubuyaki[]>
 
     toggleFavorite():void
 

@@ -3,7 +3,7 @@
  */
 import {GoogleSignInRequestInputIF} from "./GoogleSignInFunctionIF";
 import {ErrorMessages} from "../../consts/systems";
-import LambdaEvent from "../../http/LambdaEventIF";
+import LambdaEvent from "../../http/request/LambdaEventIF";
 
 export class GoogleSignInRequestInput {
     public readonly code: string

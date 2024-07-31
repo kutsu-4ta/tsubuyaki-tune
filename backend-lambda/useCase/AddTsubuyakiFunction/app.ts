@@ -1,7 +1,7 @@
-import LambdaEvent from "../../http/LambdaEventIF";
+import LambdaEvent from "../../http/request/LambdaEventIF";
 import {Tsubuyaki} from "../../models/Tsubuyaki";
 import {AddTsubuyakiSuccessResponse} from "./AddTsubuyakiSuccessResponse";
-import {Messages} from "../../consts/systems";
+import {ErrorMessages, Messages} from "../../consts/systems";
 import {AddTsubuyakiRequestInput} from "./AddTsubuyakiRequestInput";
 
 export const lambdaHandler = async (event: LambdaEvent): Promise<any> => {
@@ -9,12 +9,18 @@ export const lambdaHandler = async (event: LambdaEvent): Promise<any> => {
     console.log("==========set up==========")
     console.log(event.body)
     const requestInput = await AddTsubuyakiRequestInput.create(event);
+    await requestInput.setAuthUser();
     console.log(requestInput);
     console.log("==========================")
 
+    const authUser = requestInput.getAuthUser();
+    if (authUser === null) {
+        throw new Error(ErrorMessages.UNAUTHORIZED);
+    }
+
     const newTsubuyaki = await Tsubuyaki.createTsubuyaki({
         parentTsubuyakiId: requestInput.parentTsubuyakiId,
-        ownerUserUid: requestInput.ownerUserUid,
+        ownerUserUid: authUser.uid,
         sentence: requestInput.sentence,
         dateTimeString: requestInput.dateTimeString,
         imageList: requestInput.imageList,

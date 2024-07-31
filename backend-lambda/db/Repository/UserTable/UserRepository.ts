@@ -69,8 +69,10 @@ export class UserRepository extends BaseRepository {
      * HACK:本当はDynamoDBの取得で行いたい...
      */
     public filteredByMatchAccessToken(expected: string) {
-        this.records = this.records.filter(record => record.accessToken === expected);
         console.log("=========filteredByMatchAccessToken==========");
+        console.log(expected);
+        console.log(this.records);
+        this.records = this.records.filter(record => record.accessToken === expected);
         console.log(this.records);
         return this
     }

@@ -6,5 +6,5 @@ export interface TsubuyakiTableIF {
 
     fetchTsubuyakiList(): void
 
-    getTsubuyakiList(): void
+    getTsubuyakiList(): Tsubuyaki[]
 }

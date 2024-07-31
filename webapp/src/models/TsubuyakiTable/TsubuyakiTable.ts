@@ -1,5 +1,6 @@
 import {TsubuyakiTableIF} from "./TsubuyakiTableIF";
 import {Tsubuyaki} from "../Tsubuyaki/Tsubuyaki";
+import axios from "axios";
 
 export class TsubuyakiTable implements TsubuyakiTableIF {
     constructor(public tsubuyakiList: Tsubuyaki[]) {
@@ -76,7 +77,7 @@ export class TsubuyakiTable implements TsubuyakiTableIF {
             ];
     }
 
-    getTsubuyakiList(): Tsubuyaki[] {
+    public getTsubuyakiList(): Tsubuyaki[] {
         return this.tsubuyakiList;
     }
 }

@@ -15,13 +15,17 @@ export class Profile {
      * @param key
      */
     static async fetchProfile(key: { uid: string }): Promise<Profile | null> {
+        console.log("============fetchProfile==============");
+        console.log(key);
         const profileRepository = new ProfileRepository();
-        const all = await profileRepository.getAll()
-        const profileTableAttributes = all.filteredByMatchUid(key.uid).getFirstAsTableAttributes();
+        await profileRepository.getAll()
+        const profileTableAttributes = profileRepository.filteredByMatchUid(key.uid).getFirstAsTableAttributes();
 
         if (profileTableAttributes === null) {
             return null;
         }
+
+        console.log(profileTableAttributes);
 
         return Profile.createInstance({
             uid: profileTableAttributes.uid,

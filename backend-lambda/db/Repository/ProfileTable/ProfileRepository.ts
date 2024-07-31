@@ -48,7 +48,9 @@ export class ProfileRepository extends BaseRepository {
      * HACK:本当はDynamoDBの取得で行いたい...
      */
     public filteredByMatchUid(expected: string) {
-        this.records.filter((record) => record.uid === expected);
+        console.log("=====filteredByMatchUid=====");
+        console.log(expected);
+        this.records = this.records.filter(record => record.uid === expected);
         return this
     }
 

@@ -66,14 +66,14 @@ export class User {
     static async fetchUserByAccessToken(props: { accessToken: string }): Promise<User> {
         // 問い合わせ
         const userRepository = new UserRepository();
-        const users = await userRepository.getAll();
-        const attributesList = users.filteredByMatchAccessToken(props.accessToken).getAsTableAttributes();
+        await userRepository.getAll();
+        const attributesList = userRepository.filteredByMatchAccessToken(props.accessToken).getAsTableAttributes();
 
         console.log(props.accessToken);
         console.log(attributesList);
         // ガード
         if (DataValidator.isEmpty(attributesList)) {
-            console.error(users);
+            console.error(userRepository.getRecords());
             throw new Error(ErrorMessages.CRUD_READ);
         }
 
@@ -116,7 +116,7 @@ export class User {
      * ユーザーを新規作成する
      * @param props
      */
-    private async createRecord(props: { // TODO: 引数いらない
+    private async createRecord(props: {
         email: string
         accessToken: string
     }): Promise<User> {
@@ -144,9 +144,9 @@ export class User {
     /**
      * ログインする
      */
-    public async login() {
-
-        const accessToken = this.accessToken;
+    public async login(accessToken: string) {
+        console.log("====login====");
+        console.log(accessToken);
         // const timeStamp = this.timestamp;
 
         await this.updateAccessToken(accessToken);
@@ -156,6 +156,8 @@ export class User {
      * アクセストークンを更新する
      */
     private async updateAccessToken(accessToken: string): Promise<void> {
+        console.log("====updateAccessToken====");
+        console.log(accessToken);
         const client = new DynamoDBClient({region: ENVIRONMENT.region});
         const docClient = DynamoDBDocumentClient.from(client);
         const updateCommand = new UpdateCommand({
