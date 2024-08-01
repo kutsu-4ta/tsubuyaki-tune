@@ -19,10 +19,13 @@ export class TimeLineViewModel implements TimeLIneViewModelIF {
      * セットアップ処理
      * @param argument
      */
-    setUp(argument: { authentication: AuthenticationArgumentIF }): void {
+    async setUp(argument: { authentication: AuthenticationArgumentIF }): Promise<{ updateCount: number } | void> {
         console.log('====================TimeLineViewModel_setup====================');
         this.authState.setAuthentication(argument.authentication);
-        this.tsubuyakiTable.fetchTsubuyakiList();
+        // await this.tsubuyakiTable.fetchTsubuyakiList({
+        //     accessToken: this.authState.getAccessToken(),
+        //     uid: this.authState.getUid()
+        // });
         console.log('====================TimeLineViewModel_setup_end====================');
     }
 
@@ -72,17 +75,22 @@ export class TimeLineViewModel implements TimeLIneViewModelIF {
      * タイムラインを読み込む
      * @param props
      */
-    async loadTimeLine(props: { accessToken: string }): Promise<Tsubuyaki[]> {
+    async loadTimeLine(props: { accessToken: string }): Promise<{
+        result: { updateCount: number } | void,
+        tsubuyakiList: Tsubuyaki[]
+    }> {
         console.log('loadTimeLine');
-        // つふやきを取得する
-        const endPoint = process.env.REACT_APP_FETCH_TSUBUYAKI as string;
-        const axiosInstance = axios.create({
-            headers: {
-                'Authorization': props.accessToken,
-                'x-api-key': '1yIDLcQTj28kU0fpfZFdCaZoi4dCoEgC8hLh1duf'
-            }
+        const result = await this.tsubuyakiTable.fetchTsubuyakiList({
+            accessToken: this.authState.getAccessToken(),
+            uid: this.authState.getUid()
         });
-        return await axiosInstance.get(endPoint);
+
+        console.log(result);
+
+        return {
+            result: result,
+            tsubuyakiList: this.tsubuyakiTable.tsubuyakiList
+        };
     }
 
     /**

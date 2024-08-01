@@ -4,7 +4,7 @@ export interface TsubuyakiTableIF {
 
     tsubuyakiList: Tsubuyaki[]
 
-    fetchTsubuyakiList(): void
+    fetchTsubuyakiList(props: { accessToken: string, uid: string }): Promise<{ updateCount: number } | void>
 
     getTsubuyakiList(): Tsubuyaki[]
 }

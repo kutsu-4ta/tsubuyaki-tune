@@ -36,13 +36,12 @@ const TimeLineView = () => {
      * タイムラインの読み込み
      */
     const loadTimeLine = async (): Promise<void> => {
-        // await viewModel.loadTimeLine({accessToken: authState.accessToken}).then((response) => {
-        //     console.log("====load time line====");
-        //     console.log(response);
-        //     setTsubuyakiList(viewModel.tsubuyakiTable.tsubuyakiList);
-        // }).then((error) => {
-        //     console.log(error);
-        // });
+        await viewModel.loadTimeLine({accessToken: authState.accessToken}).then((response)=>{
+            console.log(response);
+        }).catch((error)=>{
+            console.log(error);
+        });
+        setTsubuyakiList(viewModel.tsubuyakiTable.tsubuyakiList);
     }
 
     /**
@@ -131,12 +130,14 @@ const TimeLineView = () => {
         });
 
         // タイムラインの初期化
-        // void viewModel.loadTimeLine({accessToken: authState.accessToken}).then((response) => {
+        // void loadTimeLine().then((response) => {
+        //     console.log("====load time line====");
         //     console.log(response);
         //     setTsubuyakiList(viewModel.tsubuyakiTable.tsubuyakiList);
-        // }).catch((err) => {
-        //     console.log(err);
+        // }).then((error) => {
+        //     console.log(error);
         // });
+
     }, []);
 
     return (

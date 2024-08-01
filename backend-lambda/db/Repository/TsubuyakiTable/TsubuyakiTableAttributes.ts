@@ -1,5 +1,8 @@
 import {MethodValidationError} from "../../../consts/systems";
 import {BaseTableAttributes} from "../BaseTableAttributes";
+import {hashTagString} from "../../../models/data/types";
+import Mention from "../../../models/data/Mention";
+import ImagePath from "../../../models/data/ImagePath";
 
 export interface TsubuyakiTableAttributesIF {
     tsubuyakiId: string
@@ -18,9 +21,9 @@ export class TsubuyakiTableAttributes extends BaseTableAttributes {
     public ownerUserUid: string
     public sentence: string
     public dateTimeString: string
-    public imageList: string
-    public mentionList: string
-    public hashTagStringList: string
+    public imageList: ImagePath[]
+    public mentionList: Mention[]
+    public hashTagStringList: hashTagString[]
 
     private constructor(record: Record<string, any>) {
         super();
