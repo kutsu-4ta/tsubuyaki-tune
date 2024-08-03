@@ -79,6 +79,10 @@ export class TsubuyakiDraft implements TsubuyakiDraftIF {
             parentTsubuyakiId: this.tsubuyakiDraftMetaInfo.parentTsubuyakiId
         };
 
+        console.log('===============');
+        console.log(accessToken);
+        console.log('===============');
+
         const axiosInstance = axios.create({
             headers: {
                 'Authorization': accessToken,

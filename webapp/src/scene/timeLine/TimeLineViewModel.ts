@@ -22,10 +22,7 @@ export class TimeLineViewModel implements TimeLIneViewModelIF {
     async setUp(argument: { authentication: AuthenticationArgumentIF }): Promise<{ updateCount: number } | void> {
         console.log('====================TimeLineViewModel_setup====================');
         this.authState.setAuthentication(argument.authentication);
-        // await this.tsubuyakiTable.fetchTsubuyakiList({
-        //     accessToken: this.authState.getAccessToken(),
-        //     uid: this.authState.getUid()
-        // });
+
         console.log('====================TimeLineViewModel_setup_end====================');
     }
 

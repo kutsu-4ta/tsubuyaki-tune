@@ -9,7 +9,7 @@ import {DataValidator} from "../../../utility/DataValidator";
 import {TsubuyakiTableAttributes, TsubuyakiTableAttributesIF} from "./TsubuyakiTableAttributes";
 import ImagePath from "../../../models/data/ImagePath";
 import Mention from "../../../models/data/Mention";
-import {hashTagString} from "../../../models/data/types";
+import {dateTimeString, hashTagString} from "../../../models/data/types";
 
 export class TsubuyakiRepository extends BaseRepository {
     constructor() {
@@ -21,7 +21,7 @@ export class TsubuyakiRepository extends BaseRepository {
                 'parentTsubuyakiId',
                 'ownerUserUid',
                 'sentence',
-                'dateTimeString',
+                'createdAt',
                 'imageList',
                 'mentionList',
                 'hashTagStringList'
@@ -69,7 +69,7 @@ export class TsubuyakiRepository extends BaseRepository {
             parentTsubuyakiId: string,
             ownerUserUid: string,
             sentence: string,
-            dateTimeString: string,
+            createdAt: string,
             imageList: ImagePath[],
             mentionList: Mention[],
             hashTagStringList: hashTagString
@@ -82,7 +82,6 @@ export class TsubuyakiRepository extends BaseRepository {
         const imageListJson = JSON.stringify(JSON.stringify(props.imageList))??'';
         const mentionListJson = JSON.stringify(JSON.stringify(props.mentionList))??'';
         const hashTagStringList = JSON.stringify(props.hashTagStringList)??'';
-        const dateTimeString = Date().toString();
 
         console.log(newTsubuyakiId);
         console.log(imageListJson);
@@ -95,12 +94,12 @@ export class TsubuyakiRepository extends BaseRepository {
             Key: {
                 tsubuyakiId: `${newTsubuyakiId}`
             },
-            UpdateExpression: "set parentTsubuyakiId = :parentTsubuyakiId, ownerUserUid = :ownerUserUid, sentence = :sentence, dateTimeString = :dateTimeString, imageList = :imageList, mentionList = :mentionList, hashTagStringList = :hashTagStringList",
+            UpdateExpression: "set parentTsubuyakiId = :parentTsubuyakiId, ownerUserUid = :ownerUserUid, sentence = :sentence, createdAt = :createdAt, imageList = :imageList, mentionList = :mentionList, hashTagStringList = :hashTagStringList",
             ExpressionAttributeValues: {
                 ":parentTsubuyakiId": props.parentTsubuyakiId,
                 ":ownerUserUid": ownerUserId,
                 ":sentence": props.sentence,
-                ":dateTimeString": dateTimeString,
+                ":createdAt": props.createdAt,
                 ":imageList": imageListJson,
                 ":mentionList": mentionListJson,
                 ":hashTagStringList": hashTagStringList,
@@ -117,7 +116,7 @@ export class TsubuyakiRepository extends BaseRepository {
             parentTsubuyakiId:updateResult.Attributes?.parentTsubuyakiId,
             ownerUserUid:updateResult.Attributes?.ownerUserUid,
             sentence:updateResult.Attributes?.sentence,
-            dateTimeString:updateResult.Attributes?.dateTimeString,
+            createdAt:updateResult.Attributes?.createdAt,
             imageList:updateResult.Attributes?.imageList,
             mentionList:updateResult.Attributes?.mentionList,
             hashTagStringList:updateResult.Attributes?.hashTagStringList,

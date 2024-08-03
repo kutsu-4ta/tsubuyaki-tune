@@ -1,11 +1,11 @@
+import { format } from 'date-fns';
+import axios, {AxiosResponse} from "axios";
 import {TsubuyakiTableIF} from "./TsubuyakiTableIF";
 import {Tsubuyaki, TsubuyakiArgumentIF} from "../Tsubuyaki/Tsubuyaki";
-import axios, {AxiosResponse} from "axios";
 import {dateTimeString, hashTagString} from "../data/types";
 import Mention from "../data/Mention";
 import ImagePath from "../data/ImagePath";
 
-// バックエンドと揃えている
 export interface TsubuyakiListItem {
     sentence: string
     tsubuyakiUserName: string
@@ -13,7 +13,7 @@ export interface TsubuyakiListItem {
     hashTagStringList: hashTagString[];
     imageList: ImagePath[];
     mentionList: Mention[];
-    dateTimeString: dateTimeString
+    createdAt: dateTimeString
     parentTsubuyakiId: string
     userIconImagePath: string
     favoriteCount: number
@@ -63,6 +63,11 @@ export class TsubuyakiTable implements TsubuyakiTableIF {
 
             console.log(tsubuyakiList);
 
+            const dateTime = new Date(tsubuyakiList[i].createdAt);
+            const createdAtString = format(dateTime, 'yyyy-MM-dd HH:mm:ss') as dateTimeString;
+            console.log(createdAtString);
+
+
             return Tsubuyaki.createTsubuyakiInstance({
                 sentence: tsubuyakiList[i].sentence,
                 tsubuyakiUserName: tsubuyakiList[i].tsubuyakiUserName,
@@ -71,57 +76,12 @@ export class TsubuyakiTable implements TsubuyakiTableIF {
                 hashTagStringList: tsubuyakiList[i].hashTagStringList,
                 imageList: tsubuyakiList[i].imageList,
                 mentionList: tsubuyakiList[i].mentionList,
-                dateTimeString: tsubuyakiList[i].dateTimeString,
+                createdAt: createdAtString,
                 parentTsubuyakiId: tsubuyakiList[i].parentTsubuyakiId,
                 favoriteCount: tsubuyakiList[i].favoriteCount,
                 repostCount: tsubuyakiList[i].repostCount,
             })
         });
-    }
-
-    public dev_fetchTsubuyakiList2(): void {
-        console.log('fetchTsubuyakiList');
-        this.tsubuyakiList = [
-            Tsubuyaki.createTsubuyakiInstance({
-                sentence:'ギター弾きてぇー。',
-                tsubuyakiUserName: 'aaaaaaaaaaaa',
-                userIconImagePath: '',
-                tsubuyakiId:'2',
-                hashTagStringList: [],
-                imageList:[],
-                mentionList:[],
-                dateTimeString: '2024-07-18-14:23',
-                parentTsubuyakiId: '',
-                favoriteCount: 10,
-                repostCount: 0,
-            }),
-            Tsubuyaki.createTsubuyakiInstance({
-                sentence:'3DCG作ってるけど、モデリングからつまいずいてる。',
-                tsubuyakiUserName: 'aaaaaaaaaaaa',
-                userIconImagePath: '',
-                tsubuyakiId:'3',
-                hashTagStringList: [],
-                imageList:[],
-                mentionList:[],
-                dateTimeString: '2024-07-18-14:23',
-                parentTsubuyakiId: '',
-                favoriteCount: 10,
-                repostCount: 0,
-            }),
-            Tsubuyaki.createTsubuyakiInstance({
-                sentence: '社内システム開発がめんどくさい。なんかいい方法ないかな。',
-                tsubuyakiUserName: 'aaaaaaaaaaaa',
-                userIconImagePath: '',
-                tsubuyakiId:'1',
-                hashTagStringList: [],
-                imageList:[],
-                mentionList:[],
-                dateTimeString: '2024-07-18-14:23',
-                parentTsubuyakiId: '',
-                favoriteCount: 10,
-                repostCount: 0,
-            })
-            ];
     }
 
     public getTsubuyakiList(): Tsubuyaki[] {

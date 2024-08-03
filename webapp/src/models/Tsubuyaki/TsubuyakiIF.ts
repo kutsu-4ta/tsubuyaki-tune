@@ -26,7 +26,7 @@ export interface TsubuyakiMetaInfoIF {
     tsubuyakiId: string
     userIconImagePath: string
     tsubuyakiUserName: string
-    dateTimeString: dateTimeString
+    createdAt: dateTimeString
     parentTsubuyakiId: string
     favoriteCount: number
     repostCount: number

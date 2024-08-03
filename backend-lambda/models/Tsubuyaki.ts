@@ -1,6 +1,6 @@
 import ImagePath from "./data/ImagePath";
 import Mention from "./data/Mention";
-import {dateTimeString, hashTagString} from "./data/types";
+import {hashTagString} from "./data/types";
 import {TsubuyakiRepository} from "../db/Repository/TsubuyakiTable/TsubuyakiRepository";
 import {TsubuyakiTableAttributes} from "../db/Repository/TsubuyakiTable/TsubuyakiTableAttributes";
 
@@ -20,7 +20,7 @@ export interface TsubuyakiMetaInfoIF {
     tsubuyakiId: string
     parentTsubuyakiId: string
     ownerUserUid: string
-    dateTimeString: dateTimeString
+    createdAt: string
 }
 
 /**
@@ -49,7 +49,7 @@ export class Tsubuyaki implements TsubuyakiIF {
                                               hashTagStringList: hashTagString[]
                                               imageList: ImagePath[]
                                               mentionList: Mention[]
-                                              dateTimeString: dateTimeString
+                                              createdAt: string
                                           }
     ): Tsubuyaki {
 
@@ -80,7 +80,7 @@ export class Tsubuyaki implements TsubuyakiIF {
             tsubuyakiId: argument.tsubuyakiId,
             parentTsubuyakiId: argument.parentTsubuyakiId,
             ownerUserUid: argument.ownerUserUid,
-            dateTimeString: argument.dateTimeString,
+            createdAt: argument.createdAt,
         }
 
         return new Tsubuyaki(tsubuyakiInfo, tsubuyakiMetaInfo);
@@ -90,24 +90,22 @@ export class Tsubuyaki implements TsubuyakiIF {
                                parentTsubuyakiId: string,
                                ownerUserUid: string,
                                sentence: string,
-                               dateTimeString: string,
+                               createdAt: string,
                                imageList: ImagePath[],
                                mentionList: Mention[],
                                hashTagStringList: hashTagString
                            }):Promise<TsubuyakiTableAttributes> {
         const repository = new TsubuyakiRepository();
-        const newTsubuyaki = await repository.createTsubuyaki(
+        return await repository.createTsubuyaki(
             {
                 parentTsubuyakiId: props.parentTsubuyakiId,
                 ownerUserUid: props.ownerUserUid,
                 sentence: props.sentence,
-                dateTimeString: props.dateTimeString,
+                createdAt: props.createdAt,
                 imageList: props.imageList,
                 mentionList: props.mentionList,
                 hashTagStringList: props.hashTagStringList
             }
         );
-        
-        return newTsubuyaki;
     }
 }

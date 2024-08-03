@@ -10,7 +10,7 @@ export interface TsubuyakiArgumentIF {
     hashTagStringList: hashTagString[]
     imageList: ImagePath[]
     mentionList: Mention[]
-    dateTimeString: dateTimeString
+    createdAt: dateTimeString
     parentTsubuyakiId: string
     userIconImagePath: string
     favoriteCount: number
@@ -67,7 +67,7 @@ export class Tsubuyaki implements TsubuyakiIF {
             favoriteCount: argument.favoriteCount,
             repostCount: argument.repostCount,
             tsubuyakiId: argument.tsubuyakiId,
-            dateTimeString: argument.dateTimeString,
+            createdAt: argument.createdAt,
             parentTsubuyakiId: argument.parentTsubuyakiId,
         }
 

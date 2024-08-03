@@ -9,7 +9,7 @@ export interface TsubuyakiTableAttributesIF {
     parentTsubuyakiId: string
     ownerUserUid: string
     sentence: string
-    dateTimeString: string
+    createdAt: string
     imageList: string
     mentionList: string
     hashTagStringList: string
@@ -20,7 +20,7 @@ export class TsubuyakiTableAttributes extends BaseTableAttributes {
     public parentTsubuyakiId: string
     public ownerUserUid: string
     public sentence: string
-    public dateTimeString: string
+    public createdAt: string
     public imageList: ImagePath[]
     public mentionList: Mention[]
     public hashTagStringList: hashTagString[]
@@ -31,7 +31,7 @@ export class TsubuyakiTableAttributes extends BaseTableAttributes {
         this.parentTsubuyakiId = record.parentTsubuyakiId ?? null;
         this.ownerUserUid = record.ownerUserUid ?? null;
         this.sentence = record.sentence ?? null;
-        this.dateTimeString = record.dateTimeString ?? null;
+        this.createdAt = record.createdAt ?? null;
         this.imageList = record.imageList ?? null;
         this.mentionList = record.mentionList ?? null;
         this.hashTagStringList = record.hashTagStringList ?? null;
@@ -43,7 +43,7 @@ export class TsubuyakiTableAttributes extends BaseTableAttributes {
             parentTsubuyakiId:record.parentTsubuyakiId,
             ownerUserUid:record.ownerUserUid,
             sentence:record.sentence,
-            dateTimeString:record.dateTimeString,
+            createdAt:record.createdAt,
             imageList:record.imageList,
             mentionList:record.mentionList,
             hashTagStringList:record.hashTagStringList,
@@ -66,8 +66,8 @@ export class TsubuyakiTableAttributes extends BaseTableAttributes {
             case "sentence":
                 return this.sentence === null;
 
-            case "dateTimeString":
-                return this.dateTimeString === null;
+            case "createdAt":
+                return this.createdAt === null;
 
             case "imageList":
                 return this.imageList === null;

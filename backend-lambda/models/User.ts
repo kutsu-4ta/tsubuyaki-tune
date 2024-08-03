@@ -25,7 +25,7 @@ export class User {
      * 認証情報からユーザーインスタンスを作成する
      * @param authInfo
      */
-    static async createInstance(authInfo: { userId: string, uid: string, email: string, accessToken: string }): Promise<User> {
+    static createInstance(authInfo: { userId: string, uid: string, email: string, accessToken: string }): User {
         return new User(authInfo.userId, authInfo.uid, authInfo.email, authInfo.accessToken);
     }
 

@@ -20,8 +20,6 @@ import {TimeLineViewModel} from "./TimeLineViewModel";
 import {TsubuyakiDraft} from "../../models/TsubuyakiDraft/TsubuyakiDraft";
 import ImagePath from "../../models/data/ImagePath";
 import Mention from "../../models/data/Mention";
-import {hashTagString} from "../../models/data/types";
-import axios from "axios";
 
 const timeLineViewModel = new TimeLineViewModel();
 
@@ -89,6 +87,13 @@ const TimeLineView = () => {
         }
         const response = await viewModel.addTsubuyaki(tsubuyakiDraft, authState.accessToken).then((response) => {
             console.log('成功', response);
+
+            // フォームを空にする
+            setTsubuyakiDraft(null);
+
+            // タイムラインの更新
+            void loadTimeLine();
+
             return response;
         }).catch((error) => {
             console.log('失敗', error);
@@ -120,7 +125,7 @@ const TimeLineView = () => {
         textAlign: "start"
     }
 
-    useEffect(() => {
+    useEffect( () => {
         viewModel.setUp({
             authentication: {
                 accessToken: authState.accessToken,
@@ -130,13 +135,7 @@ const TimeLineView = () => {
         });
 
         // タイムラインの初期化
-        // void loadTimeLine().then((response) => {
-        //     console.log("====load time line====");
-        //     console.log(response);
-        //     setTsubuyakiList(viewModel.tsubuyakiTable.tsubuyakiList);
-        // }).then((error) => {
-        //     console.log(error);
-        // });
+        void loadTimeLine();
 
     }, []);
 
@@ -221,7 +220,7 @@ const TimeLineView = () => {
                                                         {item.tsubuyakiMetaInfo.tsubuyakiUserName}
                                                     </Typography>
                                                     <Typography sx={{alignContent: "center", paddingLeft: 2}} color={"gray"} fontSize={14}>
-                                                        {item.tsubuyakiMetaInfo.dateTimeString}
+                                                        {item.tsubuyakiMetaInfo.createdAt}
                                                     </Typography>
                                                 </Box>
                                             </Box>

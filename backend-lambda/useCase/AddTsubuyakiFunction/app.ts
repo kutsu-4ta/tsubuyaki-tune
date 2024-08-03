@@ -5,7 +5,6 @@ import {ErrorMessages, Messages} from "../../consts/systems";
 import {AddTsubuyakiRequestInput} from "./AddTsubuyakiRequestInput";
 
 export const lambdaHandler = async (event: LambdaEvent): Promise<any> => {
-
     console.log("==========set up==========")
     console.log(event.body)
     const requestInput = await AddTsubuyakiRequestInput.create(event);
@@ -22,7 +21,7 @@ export const lambdaHandler = async (event: LambdaEvent): Promise<any> => {
         parentTsubuyakiId: requestInput.parentTsubuyakiId,
         ownerUserUid: authUser.uid,
         sentence: requestInput.sentence,
-        dateTimeString: requestInput.dateTimeString,
+        createdAt: requestInput.createdAt,
         imageList: requestInput.imageList,
         mentionList: requestInput.mentionList,
         hashTagStringList: requestInput.hashTagStringList
