@@ -13,7 +13,3 @@ profileTableName='TTProfileTable'
 tsubuyakiTableName='TTTsubuyakiTable'
 # リージョン
 region=''
-# Unite-TuneのGoogle認証アプリを使用
-googleClientSecret=''
-# OAUTHリダイレクトURL
-googleRedirectUrl=''
