@@ -6,9 +6,11 @@
 # 使用にあたってはドキュメントを確認してください。
 #****************************************
 # ユーザー認証テーブル
-authTableName=''
+authTableName='AuthTuneUserTable'
 # プロフィールテーブル
-profileTableName=''
+profileTableName='TTProfileTable'
+# つぶやきテーブル
+tsubuyakiTableName='TTTsubuyakiTable'
 # リージョン
 region=''
 # Unite-TuneのGoogle認証アプリを使用

@@ -1,17 +1,14 @@
 import {BaseHttpResponse} from "../../http/response/BaseHttpResponse";
 import {ResponseHeaders} from "../../http/response/ResponseIF";
+import {Profile} from "../../models/Profile";
 
-export interface SignInResponseBody {
+export interface AddTsubuyakiResponseBody {
     message: string
-    uid: string,
-    accessToken: string
-    email: string,
-    nickName: string,
-    iconImagePath: string
+    profileInfo: Profile|null,
 }
 
-export class SignInSuccessResponse extends BaseHttpResponse {
-    constructor(responseBody: SignInResponseBody) {
+export class FetchProfileSuccessResponse extends BaseHttpResponse {
+    constructor(responseBody: AddTsubuyakiResponseBody) {
         const statusCode = 200;
         const headers: ResponseHeaders = {
             'Access-Control-Allow-Origin': '*',
@@ -20,11 +17,7 @@ export class SignInSuccessResponse extends BaseHttpResponse {
         };
         const body = {
             message: responseBody.message,
-            uid: responseBody.uid,
-            accessToken: responseBody.accessToken,
-            email: responseBody.email,
-            nickName: responseBody.nickName,
-            iconImagePath: responseBody.iconImagePath
+            profileInfo: responseBody.profileInfo
         }
 
         super({

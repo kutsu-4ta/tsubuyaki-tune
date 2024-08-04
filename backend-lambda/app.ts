@@ -8,17 +8,13 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
  * @returns {Object} object - API Gateway Lambda Proxy Output Format
  *
  */
-import {lambdaHandler as SignInAuthorizer} from "./useCase/GoogleSignInFunction/SignInAuthorizer/app";
-import {lambdaHandler as GoogleSignIn} from "./useCase/GoogleSignInFunction/app";
 import {lambdaHandler as TokenAuthorizer} from "./useCase/TokenAuthorizerFunction/app";
+import {lambdaHandler as FetchProfileFunction} from "./useCase/FetchProfileFunction/app";
 import {lambdaHandler as AddTsubuyaki} from "./useCase/AddTsubuyakiFunction/app";
 import {lambdaHandler as FetchTsubuyaki} from "./useCase/FetchTsubuyakiFunctution/app";
 
-// 認可なし
-export const signInAuthorizer = SignInAuthorizer;
-export const googleSignInFunction = GoogleSignIn;
-
 // 認可あり
 export const tokenAuthorizerFunction = TokenAuthorizer;
+export const fetchProfileFunction = FetchProfileFunction;
 export const addTsubuyakiFunction = AddTsubuyaki;
 export const fetchTsubuyakiFunction = FetchTsubuyaki;

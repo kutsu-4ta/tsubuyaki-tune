@@ -12,8 +12,6 @@ import {
 } from "@aws-sdk/lib-dynamodb";
 import {ENVIRONMENT, Messages} from "../../consts/systems";
 import {RepositoryIF} from "./RepositoryIF";
-import any = jasmine.any;
-import {TableAttributesIF} from "./TableAttributesIF";
 
 interface DynamoDBTableIF {
     tableName: string
@@ -39,11 +37,14 @@ export abstract class BaseRepository implements RepositoryIF {
      * 全件取得する
      */
     public async getAll(): Promise<this> {
+        console.log("==================getAll==================");
         // ユーザーチェック
         const scanParams = {
             TableName: this.tableInfo.tableName,
         };
         const scanCommand = new ScanCommand(scanParams);
+        console.log("==================scanCommand==================");
+        console.log(scanCommand);
         const scanResult = await this.client.send(scanCommand);
 
         if (scanResult.Items == undefined) {

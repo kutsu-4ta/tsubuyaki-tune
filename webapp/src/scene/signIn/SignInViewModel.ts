@@ -35,12 +35,16 @@ export class SignInViewModel implements SignInViewModelIF {
 
         const params = {
             code,
-            client_id: clientId
+            clientId: clientId,
+            appName: 'tsubuyaki',
         }
+
+        console.log(`params`);
+        console.log(params);
 
         const axiosInstance = axios.create({
             headers: {
-                'Authorization': 'allow',
+                'Authorization': 'sign-in-tsubuyaki-web-app',
                 'x-api-key': '1yIDLcQTj28kU0fpfZFdCaZoi4dCoEgC8hLh1duf'
             }
         });

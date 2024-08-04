@@ -28,22 +28,6 @@ Resources:
   # ========================================================================================================
   # DynamoDB
   # ========================================================================================================
-  TTUserTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: !Ref authTableName
-      KeySchema:
-        - AttributeName: userId
-          KeyType: HASH
-      AttributeDefinitions:
-        - AttributeName: userId
-          AttributeType: S
-      ProvisionedThroughput:
-        ReadCapacityUnits: 5
-        WriteCapacityUnits: 5
-      StreamSpecification:
-        StreamViewType: NEW_IMAGE
-
   TTProfileTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -75,101 +59,6 @@ Resources:
         WriteCapacityUnits: 5
       StreamSpecification:
         StreamViewType: NEW_IMAGE
-  # ========================================================================================================
-  # APIGateway 認可なし
-  # ========================================================================================================
-  TsubuyakiTuneSignInApiGateway:
-    Type: AWS::Serverless::Api
-    Properties:
-      StageName: Dev
-      EndpointConfiguration:
-        Type: REGIONAL
-      Auth:
-        DefaultAuthorizer: TokenAuthorizer
-        AddApiKeyRequiredToCorsPreflight: false
-        Authorizers:
-          TokenAuthorizer:
-            FunctionArn: !GetAtt SignInAuthorizer.Arn
-        AddDefaultAuthorizerToCorsPreflight: false
-      Cors:
-        AllowMethods: "'GET,OPTIONS,POST'"
-        AllowHeaders: "'*'"
-        AllowOrigin: "'*'"
-    Metadata:
-      SamResourceId: TsubuyakiTuneSignInApiGateway
-
-  SignInAuthorizer:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: backend-lambda
-      Handler: app.signInAuthorizer
-      Runtime: nodejs18.x
-      Environment:
-        Variables:
-          AuthTableName: !Ref authTableName
-          Region: !Ref region
-      Policies:
-        - AmazonDynamoDBFullAccess # TODO: readだけでいい
-    Metadata:
-      SamResourceId: SignInAuthorizer
-      BuildMethod: esbuild
-      BuildProperties:
-        Format: esm
-        Minify: false
-        OutExtension: # 拡張子を.mjにすることでAWSのコンソールで表示できる
-          - .js=.mjs
-        Target: "es2020"
-        Sourcemap: true
-        EntryPoints:
-          - app.ts
-        External:
-          - "@aws-sdk/client-dynamodb"
-          - "@aws-sdk/lib-dynamodb"
-  # ========================================================================================================
-  # GoogleSingIn関数
-  # ========================================================================================================
-  GoogleSingInFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: backend-lambda
-      Handler: app.googleSignInFunction
-      Runtime: nodejs18.x
-      Architectures:
-        - x86_64
-      Events:
-        GoogleSignIn:
-          Type: Api
-          Properties:
-            Path: /oauth/google/signin
-            Method: post
-            RestApiId:
-              !Ref TsubuyakiTuneSignInApiGateway
-      # Lambdaの環境変数
-      Environment:
-        Variables:
-          RedirectUri: !Ref googleRedirectUrl
-          ClientSecret: !Ref googleClientSecret
-          AuthTableName: !Ref authTableName
-          ProfileTableName: !Ref profileTableName
-          Region: !Ref region
-      Policies:
-        - AmazonDynamoDBFullAccess
-    Metadata:
-      BuildMethod: esbuild
-      BuildProperties:
-        Format: esm
-        Minify: false
-        OutExtension: # 拡張子を.mjにすることでAWSのコンソールで表示できる
-          - .js=.mjs
-        Target: "es2020"
-        UseNpmCi: true
-        Sourcemap: true
-        EntryPoints:
-          - app.ts
-        External: # 外部パッケージの追加（ビルドの際に除外される）
-          - "https"
-          - "@aws-sdk/client-dynamodb"
-          - "@aws-sdk/lib-dynamodb"
   # ========================================================================================================
   # APIGateway 認可あり
   # ========================================================================================================
@@ -220,6 +109,50 @@ Resources:
         EntryPoints:
           - app.ts
         External:
+          - "@aws-sdk/client-dynamodb"
+          - "@aws-sdk/lib-dynamodb"
+  # ========================================================================================================
+  # FetchProfile関数
+  # ========================================================================================================
+  FetchProfileFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend-lambda
+      Handler: app.fetchProfileFunction
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      Events:
+        AddTsubuyaki:
+          Type: Api
+          Properties:
+            Path: /profile/fetch
+            Method: get
+            RestApiId:
+              !Ref TsubuyakiTuneApiGateway
+      # Lambdaの環境変数
+      Environment:
+        Variables:
+          AuthTableName: !Ref authTableName
+          ProfileTableName: !Ref profileTableName
+          TsubuyakiTableName: !Ref tsubuyakiTableName
+          Region: !Ref region
+      Policies:
+        - AmazonDynamoDBFullAccess
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Format: esm
+        Minify: false
+        OutExtension: # 拡張子を.mjにすることでAWSのコンソールで表示できる
+          - .js=.mjs
+        Target: "es2020"
+        UseNpmCi: true
+        Sourcemap: true
+        EntryPoints:
+          - app.ts
+        External: # 外部パッケージの追加（ビルドの際に除外される）
+          - "https"
           - "@aws-sdk/client-dynamodb"
           - "@aws-sdk/lib-dynamodb"
   # ========================================================================================================
@@ -314,15 +247,15 @@ Resources:
 # 作成したスタック内のリソースの情報を標準出力に表示する
 # ========================================================================================================
 Outputs:
-  # GoogleSignInAPI
-  GoogleSingInFunction:
-    Description: "Google OAuth Lambda Function ARN"
-    Value: !Sub "https://${TsubuyakiTuneSignInApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Dev/oauth/google/signin"
+  # FetchProfileAPI
+  FetchProfileFunction:
+    Description: "[GET]Fetch Tsubuyaki Lambda Function ARN"
+    Value: !Sub "https://${TsubuyakiTuneApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Dev/profile/fetch"
   # AddTsubuyakiAPI
   AddTsubuyakiFunction:
-    Description: "Add Tsubuyaki Lambda Function ARN"
+    Description: "[POST]Add Tsubuyaki Lambda Function ARN"
     Value: !Sub "https://${TsubuyakiTuneApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Dev/tsubuyaki/add"
   # FetchTsubuyakiAPI
   FetchTsubuyakiFunction:
-    Description: "Fetch Tsubuyaki Lambda Function ARN"
+    Description: "[GET]Fetch Tsubuyaki Lambda Function ARN"
     Value: !Sub "https://${TsubuyakiTuneApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Dev/tsubuyaki/fetch"
