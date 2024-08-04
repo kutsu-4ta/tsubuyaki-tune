@@ -35,9 +35,10 @@ export class TsubuyakiTable implements TsubuyakiTableIF {
     public async fetchTsubuyakiList(props: { accessToken: string, uid: string }): Promise<{ updateCount: number } | void> {
         // つふやきを取得する
         const endPoint = process.env.REACT_APP_FETCH_TSUBUYAKI as string;
+        const accessToken = props.accessToken as string;
         const axiosInstance = axios.create({
             headers: {
-                'Authorization': props.accessToken,
+                'Authorization': accessToken,
                 'x-api-key': '1yIDLcQTj28kU0fpfZFdCaZoi4dCoEgC8hLh1duf'
             }
         });

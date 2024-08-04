@@ -5,7 +5,6 @@ import ImagePath from "../../models/data/ImagePath";
 import Mention from "../../models/data/Mention";
 import Authentication, {AuthenticationArgumentIF} from "../../models/Authentication/Authentication";
 import {Tsubuyaki} from "../../models/Tsubuyaki/Tsubuyaki";
-import axios from "axios";
 
 export class TimeLineViewModel implements TimeLIneViewModelIF {
     protected authState:Authentication = Authentication.initAuthentication();

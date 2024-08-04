@@ -1,6 +1,8 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
 import {User} from "../../models/User";
-import {Messages} from "../../consts/systems";
+import {ErrorMessages, Messages} from "../../consts/systems";
+import {UserRepository} from "../../db/Repository/UserTable/UserRepository";
+import {DataValidator} from "../../utility/DataValidator";
 
 
 /**
@@ -23,14 +25,23 @@ export const lambdaHandler = async function (event: any, context: any, callback:
             body: {}
         };
     }
+    console.log(event.methodArn);
+    console.log(event.authorizationToken);
+    console.log(event.accessToken);
 
     const accessToken = event.authorizationToken;
     console.log(accessToken);
-    const authUser = await User.fetchUserByAccessToken({accessToken: accessToken});
+
+    if(accessToken === undefined){
+        throw new Error(`${ErrorMessages.UNAUTHORIZED} Token is Undefined`);
+    }
+
+    const authUser = await fetchUserByAccessToken({accessToken: accessToken});
 
     // 認可失敗
     if (authUser === null) {
         console.error(Messages.BAD_REQUEST);
+
         callback(null, generatePolicy('user', 'Deny', event.methodArn));
     }
 
@@ -41,6 +52,37 @@ export const lambdaHandler = async function (event: any, context: any, callback:
     // 認可成功
     callback(null, generatePolicy('user', 'Allow', event.methodArn));
 };
+
+/**
+ * DBのユーザー情報を元にユーザーモデルを組み立てる
+ */
+const fetchUserByAccessToken = async (props: { accessToken: string }): Promise<User> => {
+    console.log("=====================TokenAuthorizer_fetchUserByAccessToken=====================");
+    console.log(props);
+    // 問い合わせ
+    const userRepository = new UserRepository();
+    await userRepository.getAll();
+    const attributesList = userRepository.filteredByMatchAccessToken(props.accessToken).getAsTableAttributes();
+
+    console.log(props.accessToken);
+    console.log(attributesList);
+    // ガード
+    if (DataValidator.isEmpty(attributesList)) {
+        console.error(userRepository.getRecords());
+        throw new Error(ErrorMessages.UNAUTHORIZED);
+    }
+
+    // ユーザーのインスタンスを生成
+    const userTableAttributes = attributesList[0];
+    const user = await User.createInstance({
+        userId: userTableAttributes.userId,
+        uid: userTableAttributes.uid,
+        email: userTableAttributes.email,
+        accessToken: userTableAttributes.accessToken
+    });
+
+    return user;
+}
 
 const generatePolicy = (principalId: any, effect: any, resource: any) => {
 

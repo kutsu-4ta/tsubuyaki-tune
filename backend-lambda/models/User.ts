@@ -55,9 +55,6 @@ export class User {
         return user;
     }
 
-
-
-
     /**
      * DBのユーザー情報を元にユーザーモデルを組み立てる
      */
