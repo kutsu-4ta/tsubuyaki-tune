@@ -4,7 +4,6 @@ import swal from "sweetalert";
 import {authenticationState} from "../../atoms/AuthenticationState";
 import Box from "@mui/material/Box";
 import GoogleAuthenticationButton from "./authorization/google/GoogleAuthenticationButton";
-import axios from "axios";
 import {profileState} from "../../atoms/ProfileState";
 import {SignInViewModel} from "./SignInViewModel";
 

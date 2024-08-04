@@ -9,12 +9,12 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
  *
  */
 import {lambdaHandler as TokenAuthorizer} from "./useCase/TokenAuthorizerFunction/app";
-import {lambdaHandler as FetchProfileFunction} from "./useCase/FetchProfileFunction/app";
+import {lambdaHandler as FetchProfile} from "./useCase/FetchProfileFunction/app";
 import {lambdaHandler as AddTsubuyaki} from "./useCase/AddTsubuyakiFunction/app";
 import {lambdaHandler as FetchTsubuyaki} from "./useCase/FetchTsubuyakiFunctution/app";
 
 // 認可あり
 export const tokenAuthorizerFunction = TokenAuthorizer;
-export const fetchProfileFunction = FetchProfileFunction;
+export const fetchProfileFunction = FetchProfile;
 export const addTsubuyakiFunction = AddTsubuyaki;
 export const fetchTsubuyakiFunction = FetchTsubuyaki;
