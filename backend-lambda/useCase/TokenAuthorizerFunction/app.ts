@@ -12,7 +12,6 @@ import {DataValidator} from "../../utility/DataValidator";
  * @param callback
  */
 export const lambdaHandler = async function (event: any, context: any, callback: any) {
-
     const httpMethod = event.httpMethod;
     if (httpMethod === "OPTIONS") {
         return {
@@ -29,6 +28,10 @@ export const lambdaHandler = async function (event: any, context: any, callback:
     console.log(event.authorizationToken);
     console.log(event.accessToken);
 
+    const tmp = event.methodArn.split(':');
+    const apiGatewayArnTmp = tmp[5].split('/');
+    const resource = tmp[0] + ":" + tmp[1] + ":" + tmp[2] + ":" + tmp[3] + ":" + tmp[4] + ":" + apiGatewayArnTmp[0] + '/*/*';
+
     const accessToken = event.authorizationToken;
     console.log(accessToken);
 
@@ -42,7 +45,7 @@ export const lambdaHandler = async function (event: any, context: any, callback:
     if (authUser === null) {
         console.error(Messages.BAD_REQUEST);
 
-        callback(null, generatePolicy('user', 'Deny', event.methodArn));
+        callback(null, generatePolicy('user', 'Deny', resource));
     }
 
     console.log('==============auth_user=================');
@@ -50,7 +53,7 @@ export const lambdaHandler = async function (event: any, context: any, callback:
     console.log('===============================');
 
     // 認可成功
-    callback(null, generatePolicy('user', 'Allow', event.methodArn));
+    callback(null, generatePolicy('user', 'Allow', resource));
 };
 
 /**

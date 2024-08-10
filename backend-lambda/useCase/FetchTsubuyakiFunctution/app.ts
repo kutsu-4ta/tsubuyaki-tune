@@ -73,15 +73,22 @@ export const lambdaHandler = async (event: LambdaEvent): Promise<any> => {
 
         const profileList: ProfileTableAttributes[] = allProfileAttributesList.filter((profileAttributes: ProfileTableAttributes) => profileAttributes.uid === attributes.uid);
         if (DataValidator.isEmpty(profileList)) {
-            throw new Error("Profile is null");
-        }
+            // throw new Error("Profile is null");
 
-        // プロフィールセット
-        user.profile = Profile.createInstance({
-            uid: profileList[0].uid,
-            nickName: profileList[0].nickName,
-            iconImagePath: profileList[0].iconImagePath
-        });
+            // プロフィールセット
+            user.profile = Profile.createInstance({
+                uid: user.uid,
+                nickName: "user",
+                iconImagePath: ''
+            });
+        }else{
+            // プロフィールセット
+            user.profile = Profile.createInstance({
+                uid: profileList[0].uid,
+                nickName: profileList[0].nickName,
+                iconImagePath: profileList[0].iconImagePath
+            });
+        }
 
         return user
     });
@@ -125,9 +132,9 @@ export const lambdaHandler = async (event: LambdaEvent): Promise<any> => {
         return listItem;
     });
 
-    // createdAtプロパティで並び替える（降順）
+    // createdAtプロパティで並び替える（昇順）
     const sortedTsubuyakiList = tsubuyakiList.slice().sort((a:TsubuyakiListItem, b:TsubuyakiListItem) => {
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
     });
 
     console.log("==========================")

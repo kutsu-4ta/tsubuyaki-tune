@@ -70,11 +70,10 @@ Resources:
         Type: REGIONAL # リージョン最適化に設定
       Auth:
         DefaultAuthorizer: TokenAuthorizer # デフォルトの認可をトークンオーソライザーに設定
-        AddApiKeyRequiredToCorsPreflight: false
+        AddDefaultAuthorizerToCorsPreflight: false # Preflight requestの認可を除外するための設定
         Authorizers:
           TokenAuthorizer:
             FunctionArn: !GetAtt TokenAuthorizerFunction.Arn # SAMとapp.tsで作ったラムダ関数
-        AddDefaultAuthorizerToCorsPreflight: false # Preflight requestの認可を除外するための設定
       Cors:
         AllowMethods: "'GET,OPTIONS,POST'"
         AllowHeaders: "'*'"
@@ -211,7 +210,7 @@ Resources:
       Architectures:
         - x86_64
       Events:
-        AddTsubuyaki:
+        FetchTsubuyaki:
           Type: Api
           Properties:
             Path: /tsubuyaki/fetch
